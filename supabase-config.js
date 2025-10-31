@@ -15,9 +15,8 @@ const SUPABASE_CONFIG = {
     url: 'https://lazrjxgzkspyjhcszsum.supabase.co',
     
     // 🔑 Clave pública/anon de Supabase
-    // ⚠️ IMPORTANTE: Reemplaza esto con tu anon key real de Supabase
-    // Ve a: Settings > API en tu proyecto de Supabase
-    anonKey: 'TU_SUPABASE_ANON_KEY_AQUI',
+    // Configurada para el proyecto: lazrjxgzkspyjhcszsum
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxhenJqeGd6a3NweWpoY3N6c3VtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5MzkzNjMsImV4cCI6MjA3NzUxNTM2M30.sy_dLav3wO64SAMPknrTXT2ZET3e0yBD_wfkW7qckLE',
     
     // ⚙️ Configuración adicional
     options: {
