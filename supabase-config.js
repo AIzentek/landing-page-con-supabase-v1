@@ -11,11 +11,12 @@
 
 const SUPABASE_CONFIG = {
     // 🔗 URL de tu proyecto Supabase
-    // Ejemplo: 'https://xyzcompany.supabase.co'
-    url: 'TU_SUPABASE_URL_AQUI',
+    // Basado en tu project ID: lazrjxgzkspyjhcszsum
+    url: 'https://lazrjxgzkspyjhcszsum.supabase.co',
     
     // 🔑 Clave pública/anon de Supabase
-    // Esta clave es segura para usar en el frontend
+    // ⚠️ IMPORTANTE: Reemplaza esto con tu anon key real de Supabase
+    // Ve a: Settings > API en tu proyecto de Supabase
     anonKey: 'TU_SUPABASE_ANON_KEY_AQUI',
     
     // ⚙️ Configuración adicional

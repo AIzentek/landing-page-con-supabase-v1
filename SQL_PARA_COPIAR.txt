@@ -1,0 +1,219 @@
+========================================
+EJECUTA ESTE SQL EN TU SUPABASE
+========================================
+
+INSTRUCCIONES:
+1. Ve a: https://supabase.com/dashboard/project/lazrjxgzkspyjhcszsum
+2. Click en "SQL Editor" (menú izquierdo)
+3. Click en "+ New query"
+4. COPIA TODO lo que está abajo (desde CREATE TABLE hasta el final)
+5. PEGA en el editor
+6. Click en "RUN" (▶️)
+
+========================================
+SCRIPT COMPLETO - COPIA DESDE AQUÍ ⬇️
+========================================
+
+-- Crear tabla principal
+CREATE TABLE IF NOT EXISTS public.session_logs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    login_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    logout_time TIMESTAMPTZ,
+    last_activity TIMESTAMPTZ DEFAULT NOW(),
+    session_duration INTEGER,
+    is_active BOOLEAN DEFAULT true,
+    login_successful BOOLEAN NOT NULL,
+    username VARCHAR(255),
+    country VARCHAR(100),
+    country_code VARCHAR(10),
+    region VARCHAR(100),
+    city VARCHAR(100),
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
+    timezone VARCHAR(100),
+    user_agent TEXT,
+    browser VARCHAR(100),
+    browser_version VARCHAR(50),
+    os VARCHAR(100),
+    os_version VARCHAR(50),
+    device_type VARCHAR(50),
+    device_vendor VARCHAR(100),
+    device_model VARCHAR(100),
+    ip_address INET,
+    isp VARCHAR(255),
+    referrer TEXT,
+    landing_page TEXT,
+    screen_resolution VARCHAR(50),
+    language VARCHAR(20),
+    failed_attempts INTEGER DEFAULT 0,
+    pages_visited INTEGER DEFAULT 1,
+    session_key VARCHAR(255),
+    security_flags JSONB DEFAULT '{}',
+    metadata JSONB DEFAULT '{}',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Índices
+CREATE INDEX IF NOT EXISTS idx_session_logs_login_time ON public.session_logs(login_time DESC);
+CREATE INDEX IF NOT EXISTS idx_session_logs_is_active ON public.session_logs(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_session_logs_username ON public.session_logs(username);
+CREATE INDEX IF NOT EXISTS idx_session_logs_ip ON public.session_logs(ip_address);
+CREATE INDEX IF NOT EXISTS idx_session_logs_country ON public.session_logs(country);
+CREATE INDEX IF NOT EXISTS idx_session_logs_device_type ON public.session_logs(device_type);
+CREATE INDEX IF NOT EXISTS idx_session_logs_success_time ON public.session_logs(login_successful, login_time DESC);
+
+-- Función para actualizar updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para updated_at
+DROP TRIGGER IF EXISTS update_session_logs_updated_at ON public.session_logs;
+CREATE TRIGGER update_session_logs_updated_at
+    BEFORE UPDATE ON public.session_logs
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Función para calcular duración
+CREATE OR REPLACE FUNCTION calculate_session_duration()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.logout_time IS NOT NULL AND OLD.logout_time IS NULL THEN
+        NEW.session_duration = EXTRACT(EPOCH FROM (NEW.logout_time - NEW.login_time))::INTEGER;
+        NEW.is_active = false;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger para duración
+DROP TRIGGER IF EXISTS calculate_duration_on_logout ON public.session_logs;
+CREATE TRIGGER calculate_duration_on_logout
+    BEFORE UPDATE OF logout_time ON public.session_logs
+    FOR EACH ROW
+    EXECUTE FUNCTION calculate_session_duration();
+
+-- Vista: Sesiones activas
+CREATE OR REPLACE VIEW active_sessions AS
+SELECT 
+    id,
+    username,
+    login_time,
+    last_activity,
+    EXTRACT(EPOCH FROM (NOW() - login_time))::INTEGER as current_duration,
+    country,
+    city,
+    device_type,
+    browser,
+    ip_address
+FROM public.session_logs
+WHERE is_active = true
+ORDER BY login_time DESC;
+
+-- Vista: Estadísticas diarias
+CREATE OR REPLACE VIEW daily_stats AS
+SELECT 
+    DATE(login_time) as date,
+    COUNT(*) as total_attempts,
+    COUNT(*) FILTER (WHERE login_successful = true) as successful_logins,
+    COUNT(*) FILTER (WHERE login_successful = false) as failed_logins,
+    COUNT(DISTINCT ip_address) as unique_ips,
+    COUNT(DISTINCT country) as unique_countries,
+    AVG(session_duration) FILTER (WHERE session_duration IS NOT NULL) as avg_session_duration,
+    MAX(session_duration) as max_session_duration
+FROM public.session_logs
+GROUP BY DATE(login_time)
+ORDER BY date DESC;
+
+-- Vista: Top países
+CREATE OR REPLACE VIEW top_countries AS
+SELECT 
+    country,
+    country_code,
+    COUNT(*) as total_logins,
+    COUNT(*) FILTER (WHERE login_successful = true) as successful_logins,
+    COUNT(DISTINCT ip_address) as unique_ips
+FROM public.session_logs
+WHERE country IS NOT NULL
+GROUP BY country, country_code
+ORDER BY total_logins DESC;
+
+-- Función: Sesiones activas con duración
+CREATE OR REPLACE FUNCTION get_active_sessions_with_duration()
+RETURNS TABLE (
+    session_id UUID,
+    username VARCHAR,
+    login_time TIMESTAMPTZ,
+    current_duration_seconds INTEGER,
+    current_duration_formatted TEXT,
+    location TEXT,
+    device TEXT,
+    last_seen TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        sl.id,
+        sl.username,
+        sl.login_time,
+        EXTRACT(EPOCH FROM (NOW() - sl.login_time))::INTEGER,
+        TO_CHAR(NOW() - sl.login_time, 'HH24:MI:SS'),
+        COALESCE(sl.city || ', ' || sl.country, sl.country, 'Unknown'),
+        COALESCE(sl.device_type || ' - ' || sl.browser, sl.browser, 'Unknown'),
+        sl.last_activity
+    FROM public.session_logs sl
+    WHERE sl.is_active = true
+    ORDER BY sl.login_time DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Habilitar Row Level Security
+ALTER TABLE public.session_logs ENABLE ROW LEVEL SECURITY;
+
+-- Política: INSERT anónimo
+CREATE POLICY "Allow anonymous insert" ON public.session_logs
+    FOR INSERT
+    TO anon
+    WITH CHECK (true);
+
+-- Política: UPDATE anónimo
+CREATE POLICY "Allow anonymous update" ON public.session_logs
+    FOR UPDATE
+    TO anon
+    USING (true)
+    WITH CHECK (true);
+
+-- Política: SELECT anónimo
+CREATE POLICY "Allow anonymous select" ON public.session_logs
+    FOR SELECT
+    TO anon
+    USING (true);
+
+-- Mensaje de éxito
+DO $$ 
+BEGIN 
+    RAISE NOTICE '✅ Schema creado exitosamente!';
+    RAISE NOTICE '📊 Tabla: session_logs';
+    RAISE NOTICE '📈 Vistas: active_sessions, daily_stats, top_countries';
+    RAISE NOTICE '🔐 Políticas RLS habilitadas';
+END $$;
+
+========================================
+COPIA HASTA AQUÍ ⬆️
+========================================
+
+DESPUÉS DE EJECUTAR:
+1. Ve a "Table Editor" en el menú izquierdo
+2. Deberías ver la tabla "session_logs"
+3. Click en ella para ver su estructura
+4. ✅ ¡Listo para recibir datos!
+
+SIGUIENTE PASO:
+- Actualiza tu anon key en supabase-config.js
+- Ve a: Settings > API en tu proyecto
+- Copia la clave "anon" / "public"
