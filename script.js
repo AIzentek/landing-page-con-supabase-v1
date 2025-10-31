@@ -126,8 +126,17 @@ async function handleLogin(event) {
         errorMessage.style.display = 'none';
         
         // 🔥 NUEVO: Registrar login exitoso en Supabase
+        console.log('🔥 Intentando registrar login en Supabase...');
         if (window.sessionTracker) {
-            await window.sessionTracker.trackLogin(username, true, 0);
+            console.log('✅ sessionTracker disponible');
+            try {
+                await window.sessionTracker.trackLogin(username, true, 0);
+                console.log('✅ Login registrado en Supabase');
+            } catch (error) {
+                console.error('❌ Error registrando en Supabase:', error);
+            }
+        } else {
+            console.warn('⚠️ window.sessionTracker no está disponible');
         }
         
         // Registrar acceso exitoso para el panel de administración (local)

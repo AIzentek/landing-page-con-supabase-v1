@@ -30,18 +30,30 @@ class SupabaseSessionTracker {
             return this.deviceInfo;
         }
         
-        const parser = new UAParser();
-        const result = parser.getResult();
+        let result = null;
+        try {
+            if (typeof UAParser !== 'undefined') {
+                const parser = new UAParser();
+                result = parser.getResult();
+            }
+        } catch (error) {
+            console.warn('⚠️ UAParser not available, using fallback');
+        }
+        
+        // Fallback: detectar información básica sin UAParser
+        const ua = navigator.userAgent;
+        const isMobile = /Mobile|Android|iPhone|iPad/i.test(ua);
+        const isTablet = /Tablet|iPad/i.test(ua);
         
         this.deviceInfo = {
-            user_agent: navigator.userAgent,
-            browser: result.browser.name || 'Unknown',
-            browser_version: result.browser.version || 'Unknown',
-            os: result.os.name || 'Unknown',
-            os_version: result.os.version || 'Unknown',
-            device_type: this.getDeviceType(result),
-            device_vendor: result.device.vendor || 'Unknown',
-            device_model: result.device.model || 'Unknown',
+            user_agent: ua,
+            browser: result?.browser?.name || this.detectBrowser(ua),
+            browser_version: result?.browser?.version || 'Unknown',
+            os: result?.os?.name || this.detectOS(ua),
+            os_version: result?.os?.version || 'Unknown',
+            device_type: result ? this.getDeviceType(result) : (isTablet ? 'tablet' : (isMobile ? 'mobile' : 'desktop')),
+            device_vendor: result?.device?.vendor || 'Unknown',
+            device_model: result?.device?.model || 'Unknown',
             screen_resolution: `${screen.width}x${screen.height}`,
             language: navigator.language || navigator.userLanguage
         };
@@ -53,6 +65,24 @@ class SupabaseSessionTracker {
         if (parserResult.device.type === 'mobile') return 'mobile';
         if (parserResult.device.type === 'tablet') return 'tablet';
         return 'desktop';
+    }
+    
+    detectBrowser(ua) {
+        if (ua.includes('Chrome')) return 'Chrome';
+        if (ua.includes('Safari')) return 'Safari';
+        if (ua.includes('Firefox')) return 'Firefox';
+        if (ua.includes('Edge')) return 'Edge';
+        if (ua.includes('Opera')) return 'Opera';
+        return 'Unknown';
+    }
+    
+    detectOS(ua) {
+        if (ua.includes('Windows')) return 'Windows';
+        if (ua.includes('Mac')) return 'macOS';
+        if (ua.includes('Linux')) return 'Linux';
+        if (ua.includes('Android')) return 'Android';
+        if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) return 'iOS';
+        return 'Unknown';
     }
 
     // ========================================
