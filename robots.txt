@@ -1,0 +1,14 @@
+User-agent: *
+Disallow: /config.js
+Disallow: /script.js
+Disallow: /.github/
+Disallow: /server.py
+Disallow: /INSTRUCCIONES_REPOSITORIO_PRIVADO.md
+
+# Permitir acceso a la landing page
+Allow: /
+Allow: /index.html
+Allow: /styles.css
+
+# Información del sitio
+Sitemap: https://aizentek.github.io/demo-voice-LAPZO/sitemap.xml

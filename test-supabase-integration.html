@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Supabase Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-panel {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn.success { background: #28a745; }
+        .btn.danger { background: #dc3545; }
+        .btn.warning { background: #ffc107; color: #333; }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .warning { background: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        .config-section {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Integración Supabase</h1>
+    
+    <!-- Configuración -->
+    <div class="test-panel">
+        <h2>⚙️ Configuración de Supabase</h2>
+        <div class="config-section">
+            <input type="text" id="supabase-url" placeholder="https://tu-proyecto.supabase.co">
+            <input type="text" id="supabase-key" placeholder="Tu Supabase anon key">
+            <button class="btn" onclick="initializeSupabase()">🔌 Conectar</button>
+            <button class="btn success" onclick="createTables()">📋 Crear Tablas</button>
+        </div>
+        <div id="config-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <!-- Tests de Conexión -->
+    <div class="test-panel">
+        <h2>🔍 Tests de Conexión</h2>
+        <button class="btn" onclick="testConnection()">🌐 Test Conexión Básica</button>
+        <button class="btn" onclick="testTables()">📋 Verificar Tablas</button>
+        <button class="btn" onclick="testInsert()">➕ Test Inserción</button>
+        <div id="connection-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <!-- Tests de Sesión -->
+    <div class="test-panel">
+        <h2>👤 Tests de Sesión</h2>
+        <div style="margin: 10px 0;">
+            <input type="text" id="test-username" placeholder="Usuario de prueba" value="aizentekdemo">
+            <input type="password" id="test-password" placeholder="Contraseña de prueba" value="Demo12345!">
+        </div>
+        <button class="btn success" onclick="testLogin()">🔑 Test Login</button>
+        <button class="btn warning" onclick="testFailedLogin()">❌ Test Login Fallido</button>
+        <button class="btn" onclick="testHeartbeat()">💓 Test Heartbeat</button>
+        <button class="btn" onclick="testLogout()">🚪 Test Logout</button>
+        <div id="session-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <!-- Tests de Nuclear Logout -->
+    <div class="test-panel">
+        <h2>💥 Tests Nuclear Logout</h2>
+        <button class="btn danger" onclick="testNuclearLogout()">💥 Test Nuclear Logout</button>
+        <button class="btn warning" onclick="testExpelUser()">🚪 Test Expulsar Usuario</button>
+        <button class="btn" onclick="testGetActiveUsers()">👥 Ver Usuarios Activos</button>
+        <div id="nuclear-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <!-- Tests de Monitoreo -->
+    <div class="test-panel">
+        <h2>📊 Tests de Monitoreo</h2>
+        <button class="btn" onclick="testGetStats()">📈 Ver Estadísticas</button>
+        <button class="btn" onclick="testGetSessions()">📋 Ver Sesiones</button>
+        <button class="btn" onclick="testGetFailedAttempts()">❌ Ver Intentos Fallidos</button>
+        <button class="btn warning" onclick="testCleanOldSessions()">🧹 Limpiar Sesiones</button>
+        <div id="monitoring-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <!-- Resultado General -->
+    <div class="test-panel">
+        <h2>📱 Log de Actividad</h2>
+        <button class="btn" onclick="clearLog()">🧹 Limpiar Log</button>
+        <div id="activity-log" class="result">Test iniciado...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-session-manager.js"></script>
+    
+    <script>
+        let supabaseClient = null;
+        let sessionManager = null;
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('activity-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            logDiv.textContent += logEntry;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+        
+        async function initializeSupabase() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-key').value.trim();
+            
+            if (!url || !key) {
+                showResult('config-result', 'Error: URL y Key son requeridos', 'error');
+                return;
+            }
+            
+            try {
+                log('🔄 Inicializando Supabase...', 'info');
+                
+                const { createClient } = supabase;
+                supabaseClient = createClient(url, key);
+                
+                // Test básico
+                const { data, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('count(*)')
+                    .limit(1);
+                
+                if (error && error.code !== 'PGRST116') { // PGRST116 = tabla no existe
+                    throw new Error(error.message);
+                }
+                
+                // Inicializar session manager
+                if (typeof window.initSupabaseSessionManager === 'function') {
+                    sessionManager = window.initSupabaseSessionManager(url, key);
+                }
+                
+                showResult('config-result', '✅ Supabase inicializado correctamente', 'success');
+                log('✅ Supabase conectado exitosamente');
+                
+            } catch (error) {
+                const errorMsg = `❌ Error: ${error.message}`;
+                showResult('config-result', errorMsg, 'error');
+                log(errorMsg);
+            }
+        }
+        
+        async function createTables() {
+            if (!supabaseClient) {
+                showResult('config-result', 'Error: Primero debes conectar Supabase', 'error');
+                return;
+            }
+            
+            try {
+                log('📋 Intentando crear tablas...', 'info');
+                
+                // Intentar crear las tablas con SQL
+                const createTablesSQL = `
+                    CREATE TABLE IF NOT EXISTS user_sessions (
+                        id BIGSERIAL PRIMARY KEY,
+                        username TEXT NOT NULL,
+                        device_id TEXT NOT NULL,
+                        device_info JSONB,
+                        ip_address TEXT,
+                        login_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        logout_time TIMESTAMPTZ,
+                        last_heartbeat TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        status TEXT NOT NULL DEFAULT 'active',
+                        session_key TEXT,
+                        logout_reason TEXT
+                    );
+                    
+                    CREATE TABLE IF NOT EXISTS login_attempts (
+                        id BIGSERIAL PRIMARY KEY,
+                        username TEXT,
+                        device_id TEXT NOT NULL,
+                        device_info JSONB,
+                        ip_address TEXT,
+                        attempt_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        status TEXT NOT NULL DEFAULT 'failed',
+                        reason TEXT
+                    );
+                    
+                    CREATE TABLE IF NOT EXISTS admin_events (
+                        id BIGSERIAL PRIMARY KEY,
+                        event_type TEXT NOT NULL,
+                        admin_device TEXT,
+                        timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                        affected_sessions TEXT,
+                        details JSONB
+                    );
+                `;
+                
+                showResult('config-result', 
+                    '⚠️ Las tablas deben crearse manualmente en Supabase SQL Editor.\n\n' +
+                    'Ve a tu dashboard de Supabase > SQL Editor y ejecuta el SQL del archivo supabase-setup-instructions.md\n\n' +
+                    'Después haz clic en "Test Conexión Básica" para verificar.',
+                    'warning');
+                
+                log('⚠️ Tablas deben crearse manualmente en Supabase');
+                
+            } catch (error) {
+                showResult('config-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error creando tablas: ${error.message}`);
+            }
+        }
+        
+        async function testConnection() {
+            if (!supabaseClient) {
+                showResult('connection-result', 'Error: Supabase no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('🌐 Probando conexión...', 'info');
+                
+                const { data, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                showResult('connection-result', '✅ Conexión exitosa - Base de datos respondiendo', 'success');
+                log('✅ Test de conexión exitoso');
+                
+            } catch (error) {
+                showResult('connection-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Test de conexión falló: ${error.message}`);
+            }
+        }
+        
+        async function testTables() {
+            if (!supabaseClient) {
+                showResult('connection-result', 'Error: Supabase no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('📋 Verificando tablas...', 'info');
+                
+                const tables = ['user_sessions', 'login_attempts', 'admin_events'];
+                const results = [];
+                
+                for (const table of tables) {
+                    try {
+                        const { error } = await supabaseClient
+                            .from(table)
+                            .select('*')
+                            .limit(1);
+                        
+                        if (error) {
+                            results.push(`❌ ${table}: ${error.message}`);
+                        } else {
+                            results.push(`✅ ${table}: OK`);
+                        }
+                    } catch (e) {
+                        results.push(`❌ ${table}: ${e.message}`);
+                    }
+                }
+                
+                showResult('connection-result', results.join('\n'), 
+                    results.every(r => r.includes('✅')) ? 'success' : 'warning');
+                
+                log('📋 Verificación de tablas completada');
+                
+            } catch (error) {
+                showResult('connection-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error verificando tablas: ${error.message}`);
+            }
+        }
+        
+        async function testInsert() {
+            if (!supabaseClient) {
+                showResult('connection-result', 'Error: Supabase no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('➕ Probando inserción...', 'info');
+                
+                const testData = {
+                    username: 'test_user',
+                    device_id: 'test_device_' + Date.now(),
+                    device_info: { test: true },
+                    ip_address: '127.0.0.1',
+                    status: 'test'
+                };
+                
+                const { data, error } = await supabaseClient
+                    .from('user_sessions')
+                    .insert([testData])
+                    .select();
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                // Limpiar el registro de prueba
+                if (data && data[0]) {
+                    await supabaseClient
+                        .from('user_sessions')
+                        .delete()
+                        .eq('id', data[0].id);
+                }
+                
+                showResult('connection-result', '✅ Test de inserción exitoso', 'success');
+                log('✅ Test de inserción completado');
+                
+            } catch (error) {
+                showResult('connection-result', `❌ Error inserción: ${error.message}`, 'error');
+                log(`❌ Test de inserción falló: ${error.message}`);
+            }
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('test-username').value;
+            const password = document.getElementById('test-password').value;
+            
+            if (!sessionManager) {
+                showResult('session-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('🔑 Probando login...', 'info');
+                
+                const success = await sessionManager.login(username, password, {
+                    test: true,
+                    timestamp: new Date().toISOString()
+                });
+                
+                if (success) {
+                    showResult('session-result', '✅ Login exitoso', 'success');
+                    log('✅ Login test exitoso');
+                } else {
+                    showResult('session-result', '❌ Login falló - credenciales incorrectas', 'error');
+                    log('❌ Login test falló');
+                }
+                
+            } catch (error) {
+                showResult('session-result', `❌ Error login: ${error.message}`, 'error');
+                log(`❌ Error en login test: ${error.message}`);
+            }
+        }
+        
+        async function testFailedLogin() {
+            if (!sessionManager) {
+                showResult('session-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('❌ Probando login fallido...', 'info');
+                
+                const success = await sessionManager.login('wrong_user', 'wrong_pass', {
+                    test: true
+                });
+                
+                if (!success) {
+                    showResult('session-result', '✅ Login fallido registrado correctamente', 'success');
+                    log('✅ Login fallido test exitoso');
+                } else {
+                    showResult('session-result', '⚠️ Login inesperadamente exitoso', 'warning');
+                    log('⚠️ Login fallido test inesperado');
+                }
+                
+            } catch (error) {
+                showResult('session-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error en login fallido test: ${error.message}`);
+            }
+        }
+        
+        async function testHeartbeat() {
+            if (!sessionManager || !sessionManager.isConnected) {
+                showResult('session-result', 'Error: Debes hacer login primero', 'error');
+                return;
+            }
+            
+            try {
+                log('💓 Probando heartbeat...', 'info');
+                
+                // El heartbeat se ejecuta automáticamente, pero podemos forzar una actualización
+                await supabaseClient
+                    .from('user_sessions')
+                    .update({ 
+                        last_heartbeat: new Date().toISOString(),
+                        status: 'active'
+                    })
+                    .eq('device_id', sessionManager.deviceId)
+                    .eq('session_key', sessionManager.sessionKey);
+                
+                showResult('session-result', '✅ Heartbeat enviado correctamente', 'success');
+                log('✅ Heartbeat test exitoso');
+                
+            } catch (error) {
+                showResult('session-result', `❌ Error heartbeat: ${error.message}`, 'error');
+                log(`❌ Error en heartbeat test: ${error.message}`);
+            }
+        }
+        
+        async function testLogout() {
+            if (!sessionManager) {
+                showResult('session-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('🚪 Probando logout...', 'info');
+                
+                await sessionManager.logout();
+                
+                showResult('session-result', '✅ Logout exitoso', 'success');
+                log('✅ Logout test exitoso');
+                
+            } catch (error) {
+                showResult('session-result', `❌ Error logout: ${error.message}`, 'error');
+                log(`❌ Error en logout test: ${error.message}`);
+            }
+        }
+        
+        async function testNuclearLogout() {
+            if (!sessionManager) {
+                showResult('nuclear-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            if (!confirm('⚠️ Esto expulsará TODOS los usuarios activos. ¿Continuar?')) {
+                return;
+            }
+            
+            try {
+                log('💥 Probando nuclear logout...', 'info');
+                
+                const success = await sessionManager.nuclearLogoutAll();
+                
+                if (success) {
+                    showResult('nuclear-result', '💥 Nuclear logout exitoso - Todos los usuarios expulsados', 'success');
+                    log('💥 Nuclear logout test exitoso');
+                } else {
+                    showResult('nuclear-result', '❌ Nuclear logout falló', 'error');
+                    log('❌ Nuclear logout test falló');
+                }
+                
+            } catch (error) {
+                showResult('nuclear-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error en nuclear logout test: ${error.message}`);
+            }
+        }
+        
+        async function testExpelUser() {
+            if (!sessionManager) {
+                showResult('nuclear-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('🚪 Obteniendo usuarios para expulsar...', 'info');
+                
+                const users = await sessionManager.getActiveUsers();
+                
+                if (!users || users.length === 0) {
+                    showResult('nuclear-result', '⚠️ No hay usuarios activos para expulsar', 'warning');
+                    log('⚠️ No hay usuarios activos');
+                    return;
+                }
+                
+                const user = users[0];
+                const success = await sessionManager.expelSpecificUser(user.device_id);
+                
+                if (success) {
+                    showResult('nuclear-result', `✅ Usuario expulsado: ${user.username} (${user.device_id.substring(0, 12)}...)`, 'success');
+                    log('✅ Expulsión individual exitosa');
+                } else {
+                    showResult('nuclear-result', '❌ Error expulsando usuario', 'error');
+                    log('❌ Expulsión individual falló');
+                }
+                
+            } catch (error) {
+                showResult('nuclear-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error en expulsión test: ${error.message}`);
+            }
+        }
+        
+        async function testGetActiveUsers() {
+            if (!sessionManager) {
+                showResult('nuclear-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('👥 Obteniendo usuarios activos...', 'info');
+                
+                const users = await sessionManager.getActiveUsers();
+                
+                const result = users.length > 0 
+                    ? `✅ ${users.length} usuarios activos:\n${users.map(u => `- ${u.username} (${u.device_id.substring(0, 12)}...) - IP: ${u.ip_address}`).join('\n')}`
+                    : '⚠️ No hay usuarios activos';
+                
+                showResult('nuclear-result', result, users.length > 0 ? 'success' : 'warning');
+                log(`👥 ${users.length} usuarios activos encontrados`);
+                
+            } catch (error) {
+                showResult('nuclear-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error obteniendo usuarios: ${error.message}`);
+            }
+        }
+        
+        async function testGetStats() {
+            if (!sessionManager) {
+                showResult('monitoring-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('📈 Obteniendo estadísticas...', 'info');
+                
+                const [sessions, attempts, activeUsers] = await Promise.all([
+                    sessionManager.getAllSessions(10),
+                    sessionManager.getFailedAttempts(10),
+                    sessionManager.getActiveUsers()
+                ]);
+                
+                const stats = `
+📊 ESTADÍSTICAS:
+- Sesiones totales: ${sessions.length}
+- Usuarios activos: ${activeUsers.length}
+- Intentos fallidos: ${attempts.length}
+- Última actualización: ${new Date().toLocaleString()}
+                `.trim();
+                
+                showResult('monitoring-result', stats, 'success');
+                log('📈 Estadísticas obtenidas exitosamente');
+                
+            } catch (error) {
+                showResult('monitoring-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error obteniendo stats: ${error.message}`);
+            }
+        }
+        
+        async function testGetSessions() {
+            if (!sessionManager) {
+                showResult('monitoring-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('📋 Obteniendo sesiones...', 'info');
+                
+                const sessions = await sessionManager.getAllSessions(5);
+                
+                const result = sessions.length > 0 
+                    ? `✅ Últimas ${sessions.length} sesiones:\n${sessions.map(s => `- ${s.username} (${s.status}) - ${new Date(s.login_time).toLocaleString()}`).join('\n')}`
+                    : '⚠️ No hay sesiones registradas';
+                
+                showResult('monitoring-result', result, sessions.length > 0 ? 'success' : 'warning');
+                log(`📋 ${sessions.length} sesiones obtenidas`);
+                
+            } catch (error) {
+                showResult('monitoring-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error obteniendo sesiones: ${error.message}`);
+            }
+        }
+        
+        async function testGetFailedAttempts() {
+            if (!sessionManager) {
+                showResult('monitoring-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('❌ Obteniendo intentos fallidos...', 'info');
+                
+                const attempts = await sessionManager.getFailedAttempts(5);
+                
+                const result = attempts.length > 0 
+                    ? `⚠️ Últimos ${attempts.length} intentos fallidos:\n${attempts.map(a => `- ${a.username || 'vacío'} - IP: ${a.ip_address} - ${new Date(a.attempt_time).toLocaleString()}`).join('\n')}`
+                    : '✅ No hay intentos fallidos registrados';
+                
+                showResult('monitoring-result', result, attempts.length > 0 ? 'warning' : 'success');
+                log(`❌ ${attempts.length} intentos fallidos obtenidos`);
+                
+            } catch (error) {
+                showResult('monitoring-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error obteniendo intentos fallidos: ${error.message}`);
+            }
+        }
+        
+        async function testCleanOldSessions() {
+            if (!sessionManager) {
+                showResult('monitoring-result', 'Error: Session Manager no inicializado', 'error');
+                return;
+            }
+            
+            if (!confirm('⚠️ Esto eliminará sesiones más antiguas de 7 días. ¿Continuar?')) {
+                return;
+            }
+            
+            try {
+                log('🧹 Limpiando sesiones antiguas...', 'info');
+                
+                await sessionManager.cleanOldSessions(7);
+                
+                showResult('monitoring-result', '✅ Limpieza completada - Sesiones antiguas eliminadas', 'success');
+                log('🧹 Limpieza exitosa');
+                
+            } catch (error) {
+                showResult('monitoring-result', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error en limpieza: ${error.message}`);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('activity-log').textContent = 'Log limpiado...\n';
+        }
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🧪 Test suite iniciado');
+            log('⚙️ Configura Supabase para comenzar las pruebas');
+        });
+    </script>
+</body>
+</html>

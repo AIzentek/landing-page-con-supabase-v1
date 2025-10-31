@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST URGENTE - Logout Instantáneo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 5px solid #333;
+        }
+        .success { background: #d4edda; border-color: #28a745; }
+        .danger { background: #f8d7da; border-color: #dc3545; }
+        .info { background: #d1ecf1; border-color: #17a2b8; }
+        #console { 
+            background: #000; 
+            color: #0f0; 
+            padding: 15px; 
+            border-radius: 5px; 
+            height: 200px; 
+            overflow-y: auto; 
+            font-family: monospace;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 TEST URGENTE - Diagnóstico de Logout</h1>
+        
+        <div class="status info">
+            <h3>🔍 Estado Actual de la Sesión</h3>
+            <p id="current-status">Verificando...</p>
+        </div>
+
+        <div class="status">
+            <h3>⚡ Acciones de Prueba</h3>
+            <button class="btn btn-success" onclick="simulateLogin()">1️⃣ Simular Login</button>
+            <button class="btn btn-warning" onclick="checkStatus()">2️⃣ Verificar Estado</button>
+            <button class="btn btn-danger" onclick="testLogout()">3️⃣ TEST LOGOUT</button>
+            <button class="btn btn-danger" onclick="nuclearLogout()">💥 NUCLEAR TEST</button>
+        </div>
+
+        <div id="console"></div>
+
+        <div class="status">
+            <h3>📋 Instrucciones de Prueba</h3>
+            <ol>
+                <li><strong>Simular Login:</strong> Crea una sesión de prueba</li>
+                <li><strong>Verificar Estado:</strong> Confirma que la sesión existe</li>
+                <li><strong>TEST LOGOUT:</strong> Prueba el logout normal</li>
+                <li><strong>NUCLEAR TEST:</strong> Limpieza total de emergencia</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const console_div = document.getElementById('console');
+        
+        function log(message) {
+            console.log(message);
+            console_div.innerHTML += message + '<br>';
+            console_div.scrollTop = console_div.scrollHeight;
+        }
+        
+        function checkStatus() {
+            const authStatus = localStorage.getItem('authenticated_session');
+            const allKeys = Object.keys(localStorage);
+            const sessionKeys = allKeys.filter(key => key.includes('session') || key.includes('auth'));
+            
+            log('🔍 VERIFICACIÓN DE ESTADO:');
+            log(`authenticated_session = ${authStatus}`);
+            log(`Total localStorage keys: ${allKeys.length}`);
+            log(`Session-related keys: ${sessionKeys.length}`);
+            log(`Keys encontradas: ${sessionKeys.join(', ')}`);
+            
+            document.getElementById('current-status').innerHTML = `
+                <strong>authenticated_session:</strong> ${authStatus || 'NO EXISTE'}<br>
+                <strong>Keys de sesión:</strong> ${sessionKeys.length > 0 ? sessionKeys.join(', ') : 'NINGUNA'}<br>
+                <strong>Estado:</strong> ${authStatus === 'true' ? '✅ LOGUEADO' : '❌ NO LOGUEADO'}
+            `;
+        }
+        
+        function simulateLogin() {
+            localStorage.setItem('authenticated_session', 'true');
+            localStorage.setItem('login_timestamp', Date.now().toString());
+            log('✅ LOGIN SIMULADO - Session creada');
+            checkStatus();
+        }
+        
+        function testLogout() {
+            log('🚨 INICIANDO TEST LOGOUT...');
+            
+            // Método 1: Limpiar key principal
+            localStorage.removeItem('authenticated_session');
+            sessionStorage.removeItem('authenticated_session');
+            log('✅ authenticated_session eliminada');
+            
+            // Método 2: Limpiar todas las keys relacionadas
+            const allKeys = Object.keys(localStorage);
+            allKeys.forEach(key => {
+                if (key.includes('session') || key.includes('auth') || key.includes('login')) {
+                    localStorage.removeItem(key);
+                    log(`🗑️ Eliminada: ${key}`);
+                }
+            });
+            
+            // Método 3: Limpiar sessionStorage
+            sessionStorage.clear();
+            log('🧹 sessionStorage limpiado');
+            
+            // Verificar resultado
+            setTimeout(() => {
+                log('🔍 VERIFICACIÓN POST-LOGOUT:');
+                checkStatus();
+            }, 1000);
+        }
+        
+        function nuclearLogout() {
+            log('💥 INICIANDO NUCLEAR LOGOUT...');
+            
+            // Guardar keys antes
+            const beforeKeys = Object.keys(localStorage);
+            log(`📊 Keys antes: ${beforeKeys.length}`);
+            
+            // NUCLEAR CLEAN
+            localStorage.clear();
+            sessionStorage.clear();
+            log('💥 TODO ELIMINADO');
+            
+            // Verificar después
+            const afterKeys = Object.keys(localStorage);
+            log(`📊 Keys después: ${afterKeys.length}`);
+            log('✅ NUCLEAR LOGOUT COMPLETADO');
+            
+            setTimeout(checkStatus, 500);
+        }
+        
+        // Auto-verificar al cargar
+        window.onload = function() {
+            log('🚀 TEST PAGE CARGADA');
+            checkStatus();
+        };
+        
+        // Listen para mensajes
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type) {
+                log(`📨 MENSAJE RECIBIDO: ${event.data.type}`);
+                if (event.data.type === 'FORCE_LOGOUT' || event.data.type === 'NUCLEAR_LOGOUT') {
+                    log('🚨 LOGOUT FORZADO DETECTADO');
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    setTimeout(() => {
+                        log('🔄 Recargando página...');
+                        location.reload();
+                    }, 2000);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

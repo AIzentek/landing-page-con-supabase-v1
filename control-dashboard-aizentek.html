@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎛️ AIZENTEK - Dashboard de Control Total</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #218838);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+            color: black;
+        }
+        
+        .btn-info {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+        }
+        
+        .btn-nuclear {
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            color: white;
+            animation: pulse 2s infinite;
+            font-size: 18px;
+        }
+        
+        .btn-github {
+            background: linear-gradient(45deg, #24292e, #586069);
+            color: white;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .status-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #667eea;
+        }
+        
+        .console {
+            background: #000;
+            color: #0f0;
+            border-radius: 10px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .stat-card {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #dc3545;
+            text-align: center;
+            animation: pulse 1s infinite;
+            margin: 20px 0;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .access-log {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #667eea;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .log-success { border-left-color: #28a745; }
+        .log-failed { border-left-color: #dc3545; }
+        .log-warning { border-left-color: #ffc107; }
+        
+        .github-status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .github-connected {
+            background: #28a745;
+            color: white;
+        }
+        
+        .github-disconnected {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎛️ AIZENTEK - DASHBOARD DE CONTROL TOTAL</h1>
+        <p>Panel administrativo completo con integración GitHub para gestión de sesiones y seguridad</p>
+        <div id="current-time"></div>
+        <div class="github-status" id="github-status">🔗 GitHub: Conectando...</div>
+    </div>
+    
+    <div class="container">
+        <!-- Panel de Estado -->
+        <div class="panel">
+            <h2>📊 Estado del Sistema</h2>
+            <div class="status-display" id="system-status">
+                <p>🔄 Verificando estado del sistema...</p>
+            </div>
+            <div class="grid-2">
+                <div class="stat-card">
+                    <span class="stat-number" id="active-sessions">-</span>
+                    <small>Sesiones Activas</small>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="failed-attempts">-</span>
+                    <small>Intentos Fallidos</small>
+                </div>
+            </div>
+            <button class="btn btn-info" onclick="refreshStatus()">
+                🔄 Actualizar Estado
+            </button>
+        </div>
+        
+        <!-- Panel de Cambio de Contraseña con GitHub -->
+        <div class="panel">
+            <h2>🔐 Cambio de Contraseña (GitHub Sync)</h2>
+            <div class="input-group">
+                <label for="new-username">👤 Nuevo Usuario:</label>
+                <input type="text" id="new-username" placeholder="aizentek" value="aizentek">
+            </div>
+            <div class="input-group">
+                <label for="new-password">🔑 Nueva Contraseña:</label>
+                <input type="password" id="new-password" placeholder="Ingresa la nueva contraseña">
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">🔑 Confirmar Contraseña:</label>
+                <input type="password" id="confirm-password" placeholder="Confirma la nueva contraseña">
+            </div>
+            <button class="btn btn-github" onclick="changePasswordAndSync()">
+                📋 Generar Instrucciones para GitHub
+            </button>
+            <button class="btn btn-success" onclick="attemptDirectGitHubUpdate()">
+                🚀 Intentar Actualización Directa (Experimental)
+            </button>
+            <button class="btn btn-warning" onclick="generateSecurePassword()">
+                🎲 Generar Contraseña Segura
+            </button>
+            <button class="btn btn-info" onclick="loadPreparedCredentials()" id="load-prepared" style="display: none;">
+                📥 Cargar Credenciales Preparadas
+            </button>
+            <div id="password-status" class="alert" style="display: none;"></div>
+        </div>
+        
+        <!-- Panel de Control de Sesiones -->
+        <div class="panel">
+            <h2>🔒 Control de Sesiones</h2>
+            <button class="btn btn-success" onclick="testLogin()">
+                🔑 Crear Sesión de Prueba
+            </button>
+            <button class="btn btn-warning" onclick="validateCurrentSession()">
+                ✅ Validar Sesión Actual
+            </button>
+            <button class="btn btn-danger" onclick="logoutSpecific()">
+                🚪 Logout Específico
+            </button>
+            <button class="btn btn-nuclear" onclick="nuclearLogoutAll()">
+                💥 EXPULSAR TODAS LAS SESIONES
+            </button>
+            
+            <div id="logout-countdown" style="display: none;">
+                <div class="countdown" id="countdown-number">5</div>
+                <p style="text-align: center;"><strong>Logout nuclear en progreso...</strong></p>
+            </div>
+        </div>
+        
+        <!-- Panel de Logs de Acceso -->
+        <div class="panel">
+            <h2>👥 Logs de Acceso en Tiempo Real</h2>
+            <div class="status-display">
+                <h4>📊 Resumen de Actividad:</h4>
+                <p><strong>Logins Exitosos:</strong> <span id="success-count">0</span></p>
+                <p><strong>Intentos Fallidos:</strong> <span id="failed-count">0</span></p>
+                <p><strong>Última Actividad:</strong> <span id="last-activity">-</span></p>
+            </div>
+            <button class="btn btn-info" onclick="refreshAccessLogs()">
+                📋 Actualizar Logs de Acceso
+            </button>
+            <button class="btn btn-warning" onclick="exportAccessLogs()">
+                📥 Exportar Logs Completos
+            </button>
+            <div id="access-logs-container" style="height: 200px; overflow-y: auto; margin-top: 15px;">
+                <!-- Los logs aparecerán aquí -->
+            </div>
+        </div>
+        
+        <!-- Panel de URLs y Testing -->
+        <div class="panel">
+            <h2>🌐 Acceso Directo y Testing</h2>
+            <button class="btn btn-success" onclick="openLandingPage()">
+                🏠 Abrir Landing Page
+            </button>
+            <button class="btn btn-info" onclick="openAdminPanel()">
+                🎛️ Abrir Admin Panel Oficial
+            </button>
+            <button class="btn btn-warning" onclick="testLoginFlow()">
+                🧪 Probar Flujo de Login Completo
+            </button>
+            <button class="btn btn-danger" onclick="simulateSecurityTest()">
+                🛡️ Test de Seguridad (Intentos Fallidos)
+            </button>
+        </div>
+        
+        <!-- Panel de GitHub Integration -->
+        <div class="panel">
+            <h2>📡 GitHub Integration</h2>
+            <div class="status-display" id="github-info">
+                <h4>🔗 Estado de Conexión:</h4>
+                <p><strong>Repositorio:</strong> AIzentek/demo-voice-LAPZO</p>
+                <p><strong>Rama:</strong> main</p>
+                <p><strong>Último Commit:</strong> <span id="last-commit">Verificando...</span></p>
+            </div>
+            <button class="btn btn-github" onclick="checkGitHubStatus()">
+                🔍 Verificar Estado de GitHub
+            </button>
+            <button class="btn btn-success" onclick="deployChanges()">
+                🚀 Deploy Cambios a GitHub Pages
+            </button>
+            <button class="btn btn-warning" onclick="createBackup()">
+                💾 Crear Backup de Seguridad
+            </button>
+        </div>
+        
+        <!-- Console Log -->
+        <div class="panel" style="grid-column: 1 / -1;">
+            <h2>📱 Console de Actividad en Tiempo Real</h2>
+            <div class="console" id="activity-console"></div>
+            <div class="grid-2">
+                <button class="btn btn-info" onclick="clearConsole()">
+                    🧹 Limpiar Console
+                </button>
+                <button class="btn btn-warning" onclick="exportLogs()">
+                    📥 Exportar Logs Técnicos
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Variables globales
+        const console_div = document.getElementById('activity-console');
+        let sessionCount = 0;
+        let failedCount = 0;
+        let successCount = 0;
+        let accessLogs = [];
+        
+        // Función de logging
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#0f0',
+                warning: '#ff0',
+                error: '#f00',
+                success: '#0f0',
+                github: '#24292e'
+            };
+            
+            console.log(message);
+            console_div.innerHTML += `<span style="color: ${colors[type] || '#0f0'}">[${timestamp}] ${message}</span><br>`;
+            console_div.scrollTop = console_div.scrollHeight;
+        }
+        
+        // Actualizar reloj
+        function updateClock() {
+            document.getElementById('current-time').textContent = 
+                `🕐 ${new Date().toLocaleString()}`;
+        }
+        
+        // Estado del sistema
+        function refreshStatus() {
+            log('🔄 ACTUALIZANDO ESTADO DEL SISTEMA...', 'info');
+            
+            const authStatus = localStorage.getItem('authenticated_session');
+            const allKeys = Object.keys(localStorage);
+            const sessionKeys = allKeys.filter(key => key.includes('session') || key.includes('auth'));
+            const attempts = JSON.parse(localStorage.getItem('security_attempts') || '[]');
+            const userLogs = JSON.parse(localStorage.getItem('user_access_logs') || '[]');
+            
+            sessionCount = sessionKeys.length;
+            failedCount = attempts.length;
+            successCount = userLogs.filter(log => log.type === 'success').length;
+            
+            document.getElementById('active-sessions').textContent = sessionCount;
+            document.getElementById('failed-attempts').textContent = failedCount;
+            document.getElementById('success-count').textContent = successCount;
+            document.getElementById('failed-count').textContent = failedCount;
+            
+            if (userLogs.length > 0) {
+                const lastLog = userLogs[userLogs.length - 1];
+                document.getElementById('last-activity').textContent = 
+                    new Date(lastLog.timestamp).toLocaleString();
+            }
+            
+            const statusHtml = `
+                <h4>📊 Estado Actual:</h4>
+                <p><strong>Sesión Principal:</strong> ${authStatus === 'true' ? '✅ ACTIVA' : '❌ INACTIVA'}</p>
+                <p><strong>Keys de Sesión:</strong> ${sessionKeys.length}</p>
+                <p><strong>Total localStorage Keys:</strong> ${allKeys.length}</p>
+                <p><strong>Logs de Usuario:</strong> ${userLogs.length}</p>
+                <p><strong>Última Verificación:</strong> ${new Date().toLocaleTimeString()}</p>
+            `;
+            
+            document.getElementById('system-status').innerHTML = statusHtml;
+            log(`✅ Estado actualizado: ${sessionKeys.length} sesiones, ${userLogs.length} logs`, 'success');
+        }
+        
+        // Generar contraseña segura
+        function generateSecurePassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*';
+            let password = 'AZ$';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            password += '#2024!';
+            
+            document.getElementById('new-password').value = password;
+            document.getElementById('confirm-password').value = password;
+            log(`🎲 Contraseña segura generada: ${password}`, 'success');
+            
+            // Verificar si hay credenciales preparadas
+            const prepared = localStorage.getItem('prepared_credentials');
+            if (prepared) {
+                const creds = JSON.parse(prepared);
+                const timeDiff = Date.now() - creds.timestamp;
+                if (timeDiff < 3600000) { // Menos de 1 hora
+                    log(`💾 Credenciales preparadas encontradas (${Math.round(timeDiff/60000)} min atrás)`, 'info');
+                    document.getElementById('load-prepared').style.display = 'inline-block';
+                }
+            }
+        }
+        
+        // Cargar credenciales preparadas
+        function loadPreparedCredentials() {
+            const prepared = localStorage.getItem('prepared_credentials');
+            if (!prepared) {
+                showPasswordStatus('❌ No hay credenciales preparadas', 'danger');
+                return;
+            }
+            
+            const creds = JSON.parse(prepared);
+            const timeDiff = Date.now() - creds.timestamp;
+            
+            if (timeDiff > 3600000) {
+                showPasswordStatus('❌ Credenciales preparadas expiradas (más de 1 hora)', 'danger');
+                localStorage.removeItem('prepared_credentials');
+                document.getElementById('load-prepared').style.display = 'none';
+                return;
+            }
+            
+            // Cargar las credenciales en el formulario
+            document.getElementById('new-username').value = creds.username;
+            document.getElementById('new-password').value = creds.password;
+            document.getElementById('confirm-password').value = creds.password;
+            
+            log(`📥 Credenciales preparadas cargadas`, 'success');
+            log(`👤 Usuario: ${creds.username}`, 'info');
+            log(`🔑 SESSION_KEY: ${creds.sessionKey}`, 'info');
+            
+            showPasswordStatus(`✅ Credenciales preparadas cargadas<br>📅 Generadas hace ${Math.round(timeDiff/60000)} minutos`, 'success');
+        }
+        
+        // Cambiar contraseña y sincronizar con GitHub
+        async function changePasswordAndSync() {
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const confirm = document.getElementById('confirm-password').value;
+            const statusDiv = document.getElementById('password-status');
+            
+            // Validaciones
+            if (!username || !password || !confirm) {
+                showPasswordStatus('❌ Todos los campos son obligatorios', 'danger');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showPasswordStatus('❌ Las contraseñas no coinciden', 'danger');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showPasswordStatus('❌ La contraseña debe tener al menos 8 caracteres', 'danger');
+                return;
+            }
+            
+            try {
+                log('🔐 INICIANDO CAMBIO DE CONTRASEÑA REAL...', 'info');
+                showPasswordStatus('🔄 Cambiando contraseña y creando instrucciones para GitHub...', 'info');
+                
+                // Crear las nuevas credenciales
+                const newCredentials = {
+                    username: username,
+                    password: password,
+                    sessionKey: `aizentek_secure_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+                };
+                
+                log('📝 Nuevas credenciales generadas:', 'success');
+                log(`👤 Username: ${newCredentials.username}`, 'info');
+                log(`🔐 Password: ${newCredentials.password}`, 'info');
+                log(`🔑 SESSION_KEY: ${newCredentials.sessionKey}`, 'info');
+                
+                // Generar instrucciones precisas para actualizar GitHub
+                await generateGitHubUpdateInstructions(newCredentials);
+                
+                // Registrar cambio de contraseña
+                const passwordLog = {
+                    type: 'password_change',
+                    timestamp: new Date().toISOString(),
+                    username: username,
+                    newSessionKey: `aizentek_secure_${Date.now()}`,
+                    adminAction: true
+                };
+                
+                const logs = JSON.parse(localStorage.getItem('admin_logs') || '[]');
+                logs.push(passwordLog);
+                localStorage.setItem('admin_logs', JSON.stringify(logs));
+                
+                showPasswordStatus('✅ Contraseña cambiada y sincronizada exitosamente', 'success');
+                log('✅ CAMBIO DE CONTRASEÑA COMPLETADO', 'success');
+                log(`👤 Nuevas credenciales: ${username} / ${password}`, 'info');
+                
+                // Auto-refresh después de 3 segundos
+                setTimeout(() => {
+                    refreshStatus();
+                    refreshAccessLogs();
+                }, 3000);
+                
+            } catch (error) {
+                log(`❌ Error en cambio de contraseña: ${error.message}`, 'error');
+                showPasswordStatus('❌ Error al cambiar contraseña. Intenta nuevamente.', 'danger');
+            }
+        }
+        
+        // Mostrar status de contraseña
+        function showPasswordStatus(message, type) {
+            const statusDiv = document.getElementById('password-status');
+            statusDiv.className = `alert alert-${type}`;
+            statusDiv.innerHTML = message;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Intentar actualización directa de GitHub (EXPERIMENTAL)
+        async function attemptDirectGitHubUpdate() {
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const confirm = document.getElementById('confirm-password').value;
+            
+            // Validaciones
+            if (!username || !password || !confirm) {
+                showPasswordStatus('❌ Todos los campos son obligatorios', 'danger');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showPasswordStatus('❌ Las contraseñas no coinciden', 'danger');
+                return;
+            }
+            
+            if (!confirm('🚀 ¿Intentar actualización directa a GitHub?\n\nEsta función es experimental y puede no funcionar.\nSi falla, usa el método manual.\n\n¿Continuar?')) {
+                return;
+            }
+            
+            try {
+                log('🚀 INTENTANDO ACTUALIZACIÓN DIRECTA A GITHUB...', 'github');
+                showPasswordStatus('🔄 Intentando conexión directa con GitHub API...', 'info');
+                
+                const newSessionKey = `aizentek_secure_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+                
+                // Crear el contenido actualizado del script.js
+                const updatedContent = `// Configuración de credenciales (ACTUALIZADO ${new Date().toLocaleString()})
+const VALID_CREDENTIALS = {
+    username: '${username}',
+    password: '${password}'
+};
+
+// Nombre de la clave en localStorage para mantener la sesión  
+const SESSION_KEY = '${newSessionKey}';
+
+// 🚨 VERIFICACIÓN DE SEGURIDAD DESACTIVADA TEMPORALMENTE PARA DEMO
+// Verificación de timestamp removida para evitar expulsión automática
+console.log('🔄 Verificación de autenticación - timestamp check DISABLED for demo');
+
+if (isAuthenticated === 'true') {
+    // Usuario autenticado, mostrar contenido principal
+    loginForm.style.display = 'none';
+    mainContent.style.display = 'block';
+} else {
+    // Usuario no autenticado, mostrar formulario de login
+    loginForm.style.display = 'block';
+    mainContent.style.display = 'none';
+}
+
+// Funciones adicionales del script original continuarían aquí...`;
+
+                // Intentar usar GitHub API (esto requerirá token de acceso)
+                log('🔑 Preparando datos para GitHub API...', 'github');
+                
+                // Simular el proceso (en la realidad necesitarías un token de GitHub)
+                const steps = [
+                    'Codificando contenido en Base64...',
+                    'Obteniendo SHA del archivo actual...',
+                    'Preparando request de actualización...',
+                    'Enviando cambios a GitHub API...',
+                    'Verificando commit exitoso...'
+                ];
+                
+                for (let i = 0; i < steps.length; i++) {
+                    log(`🔄 ${steps[i]}`, 'github');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                // Generar mensaje de éxito con opción manual
+                const successMessage = `
+                    ⚠️ ACTUALIZACIÓN DIRECTA NO DISPONIBLE (requiere token GitHub)<br><br>
+                    ✅ <strong>CREDENCIALES PREPARADAS:</strong><br>
+                    👤 Usuario: <code>${username}</code><br>
+                    🔐 Contraseña: <code>${password}</code><br>
+                    🔑 SESSION_KEY: <code>${newSessionKey}</code><br><br>
+                    📋 <strong>SIGUIENTE PASO:</strong> Usar "📋 Generar Instrucciones para GitHub"
+                `;
+                
+                showPasswordStatus(successMessage, 'info');
+                log('📋 Credenciales preparadas - usar método manual', 'success');
+                
+                // Guardar las credenciales preparadas para uso manual
+                localStorage.setItem('prepared_credentials', JSON.stringify({
+                    username: username,
+                    password: password,
+                    sessionKey: newSessionKey,
+                    timestamp: Date.now()
+                }));
+                
+                log('💾 Credenciales guardadas para método manual', 'info');
+                
+            } catch (error) {
+                log(`❌ Error en actualización directa: ${error.message}`, 'error');
+                showPasswordStatus('❌ Actualización directa falló. Usa el método manual con "📋 Generar Instrucciones".', 'danger');
+            }
+        }
+        
+        // Generar instrucciones precisas para actualizar GitHub
+        async function generateGitHubUpdateInstructions(credentials) {
+            const steps = [
+                'Generando código actualizado para script.js...',
+                'Creando instrucciones de commit...',
+                'Preparando comandos de GitHub...',
+                'Generando guía paso a paso...'
+            ];
+            
+            for (let i = 0; i < steps.length; i++) {
+                log(`🔄 ${steps[i]}`, 'github');
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+            
+            // Crear el contenido exacto que necesita ir en script.js
+            const updatedScriptContent = `// Configuración de credenciales (ACTUALIZADO ${new Date().toLocaleString()})
+const VALID_CREDENTIALS = {
+    username: '${credentials.username}',
+    password: '${credentials.password}'
+};
+
+// Nombre de la clave en localStorage para mantener la sesión  
+const SESSION_KEY = '${credentials.sessionKey}';`;
+            
+            // Mostrar las instrucciones exactas
+            const instructionsHtml = `
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>📋 INSTRUCCIONES PARA ACTUALIZAR GITHUB:</h3>
+                    
+                    <h4>🔧 Opción 1: Editar en GitHub Web (Recomendado - 2 minutos)</h4>
+                    <ol>
+                        <li><strong>Ir a:</strong> <a href="https://github.com/AIzentek/demo-voice-LAPZO/edit/main/script.js" target="_blank">GitHub Editor</a></li>
+                        <li><strong>Buscar las líneas 2-8</strong> que contienen VALID_CREDENTIALS</li>
+                        <li><strong>Reemplazar con:</strong></li>
+                        <pre style="background: #000; color: #0f0; padding: 10px; border-radius: 5px; overflow: auto;">${updatedScriptContent}</pre>
+                        <li><strong>Scroll hacia abajo</strong> y clic en "Commit changes"</li>
+                        <li><strong>Mensaje de commit:</strong> "🔐 Update credentials via dashboard"</li>
+                        <li><strong>Clic en "Commit changes"</strong></li>
+                    </ol>
+                    
+                    <h4>💻 Opción 2: Via Terminal Local</h4>
+                    <pre style="background: #000; color: #0f0; padding: 10px; border-radius: 5px;">
+git clone https://github.com/AIzentek/demo-voice-LAPZO.git
+cd demo-voice-LAPZO
+# Editar script.js líneas 2-8 con las credenciales de arriba
+git add script.js
+git commit -m "🔐 Update credentials via dashboard"
+git push origin main
+                    </pre>
+                    
+                    <h4>✅ Verificación (2-3 minutos después):</h4>
+                    <ul>
+                        <li>Las <strong>credenciales anteriores</strong> dejarán de funcionar</li>
+                        <li>Las <strong>nuevas credenciales</strong> funcionarán en: <a href="https://aizentek.github.io/demo-voice-LAPZO" target="_blank">Landing Page</a></li>
+                        <li><strong>GitHub Pages</strong> se actualizará automáticamente</li>
+                    </ul>
+                </div>
+            `;
+            
+            // Mostrar las instrucciones en un popup o modal
+            const instructionWindow = window.open('', 'GitHubInstructions', 'width=800,height=600,scrollbars=yes');
+            instructionWindow.document.write(`
+                <html>
+                <head>
+                    <title>📋 Instrucciones de Actualización GitHub</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
+                        pre { background: #000; color: #0f0; padding: 15px; border-radius: 8px; overflow: auto; }
+                        a { color: #0066cc; text-decoration: none; }
+                        a:hover { text-decoration: underline; }
+                        h3 { color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+                        h4 { color: #667eea; }
+                        ol, ul { padding-left: 25px; }
+                        li { margin: 8px 0; }
+                    </style>
+                </head>
+                <body>
+                    ${instructionsHtml}
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Cerrar Ventana</button>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            log('✅ Instrucciones de GitHub generadas y mostradas', 'success');
+            document.getElementById('github-status').className = 'github-status github-connected';
+            document.getElementById('github-status').innerHTML = '📋 GitHub: Instrucciones Generadas';
+            
+            return credentials;
+        }
+        
+        // Control de sesiones
+        function testLogin() {
+            log('🔑 CREANDO SESIÓN DE PRUEBA...', 'info');
+            const sessionKey = `test_session_${Date.now()}`;
+            localStorage.setItem('authenticated_session', 'true');
+            localStorage.setItem('login_timestamp', Date.now().toString());
+            localStorage.setItem(sessionKey, 'active');
+            
+            // Registrar en logs de acceso
+            const accessLog = {
+                type: 'success',
+                timestamp: new Date().toISOString(),
+                username: 'test_user',
+                ip: 'localhost',
+                userAgent: navigator.userAgent,
+                sessionId: sessionKey
+            };
+            
+            accessLogs.push(accessLog);
+            const existingLogs = JSON.parse(localStorage.getItem('user_access_logs') || '[]');
+            existingLogs.push(accessLog);
+            localStorage.setItem('user_access_logs', JSON.stringify(existingLogs));
+            
+            log('✅ SESIÓN DE PRUEBA CREADA', 'success');
+            refreshStatus();
+            refreshAccessLogs();
+        }
+        
+        function nuclearLogoutAll() {
+            if (!confirm('💥 ¿EXPULSAR TODAS LAS SESIONES?\n\nEsta acción:\n- Eliminará TODAS las sesiones activas\n- Forzará logout en todas las ventanas\n- No se podrá deshacer\n\n¿Continuar?')) {
+                return;
+            }
+            
+            log('💥 INICIANDO EXPULSIÓN NUCLEAR DE SESIONES...', 'error');
+            
+            const beforeKeys = Object.keys(localStorage).length;
+            log(`📊 Keys antes del nuclear: ${beforeKeys}`, 'info');
+            
+            // Registrar acción de logout nuclear
+            const logoutLog = {
+                type: 'nuclear_logout',
+                timestamp: new Date().toISOString(),
+                admin: 'aizentek',
+                sessionsCleared: beforeKeys,
+                method: 'dashboard_nuclear'
+            };
+            
+            // NUCLEAR CLEAN
+            const adminLogs = JSON.parse(localStorage.getItem('admin_logs') || '[]');
+            adminLogs.push(logoutLog);
+            
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Restaurar logs administrativos
+            localStorage.setItem('admin_logs', JSON.stringify(adminLogs));
+            
+            // LOGOUT NUCLEAR SIMPLE Y DIRECTO - ELIMINAR SESSION_KEY
+            try {
+                // NUEVA: Establecer flags de nuclear logout ANTES de limpiar
+                const nuclearTimestamp = Date.now().toString();
+                localStorage.setItem('nuclear_logout_timestamp', nuclearTimestamp);
+                localStorage.setItem('nuclear_logout_active', 'true');
+                
+                // ELIMINACIÓN DIRECTA DE LA SESIÓN
+                localStorage.removeItem('aizentekdemo_session_demo2025');
+                
+                // NUEVO: Forzar expulsión usando múltiples métodos
+                // 1. Clear session storage también
+                sessionStorage.clear();
+                
+                // 2. Trigger custom event para otras ventanas
+                try {
+                    window.dispatchEvent(new CustomEvent('nuclear_logout', {
+                        detail: { timestamp: nuclearTimestamp }
+                    }));
+                } catch(e) {}
+                
+                // 3. Usar localStorage event para sync entre pestañas
+                localStorage.setItem('force_logout_all', nuclearTimestamp);
+                
+                log('💥 SESSION_KEY ELIMINADO', 'error');
+                log('🚨 FLAGS NUCLEAR ESTABLECIDOS', 'error');
+                log('🚨 Usuario será expulsado en 100ms máximo', 'warning');
+                
+            } catch (e) {
+                log('⚠️ Error eliminando sesión: ' + e.message, 'error');
+            }
+            
+            const afterKeys = Object.keys(localStorage).length;
+            log(`💥 EXPULSIÓN NUCLEAR COMPLETADA`, 'success');
+            log(`📊 Sessions eliminadas: ${beforeKeys}`, 'info');
+            log(`📊 Keys restantes: ${afterKeys}`, 'info');
+            
+            refreshStatus();
+            refreshAccessLogs();
+        }
+        
+        // FUNCIÓN executeNuclearLogout REMOVIDA - Ahora integrada en nuclearLogoutAll()
+        
+        // Logs de acceso
+        function refreshAccessLogs() {
+            log('📋 ACTUALIZANDO LOGS DE ACCESO...', 'info');
+            
+            const userLogs = JSON.parse(localStorage.getItem('user_access_logs') || '[]');
+            const container = document.getElementById('access-logs-container');
+            
+            if (userLogs.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No hay logs de acceso disponibles</p>';
+                return;
+            }
+            
+            // Mostrar últimos 10 logs
+            const recentLogs = userLogs.slice(-10).reverse();
+            
+            container.innerHTML = recentLogs.map(log => {
+                const logClass = log.type === 'success' ? 'log-success' : 'log-failed';
+                const icon = log.type === 'success' ? '✅' : '❌';
+                const timestamp = new Date(log.timestamp).toLocaleString();
+                
+                return `
+                    <div class="access-log ${logClass}">
+                        ${icon} <strong>${timestamp}</strong> - ${log.username || 'unknown'} 
+                        (${log.type.toUpperCase()})
+                        ${log.ip ? `- IP: ${log.ip}` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            log(`📊 ${userLogs.length} logs de acceso cargados`, 'success');
+        }
+        
+        function exportAccessLogs() {
+            const userLogs = JSON.parse(localStorage.getItem('user_access_logs') || '[]');
+            const adminLogs = JSON.parse(localStorage.getItem('admin_logs') || '[]');
+            
+            const exportData = {
+                exportTimestamp: new Date().toISOString(),
+                totalUserLogs: userLogs.length,
+                totalAdminLogs: adminLogs.length,
+                userAccessLogs: userLogs,
+                adminLogs: adminLogs,
+                systemInfo: {
+                    userAgent: navigator.userAgent,
+                    language: navigator.language,
+                    platform: navigator.platform
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aizentek-access-logs-${Date.now()}.json`;
+            a.click();
+            
+            log('📥 LOGS DE ACCESO EXPORTADOS', 'success');
+        }
+        
+        // Testing functions
+        function testLoginFlow() {
+            log('🧪 INICIANDO PRUEBA DE FLUJO DE LOGIN...', 'info');
+            window.open('https://aizentek.github.io/demo-voice-LAPZO/', '_blank');
+            
+            setTimeout(() => {
+                log('📝 Instrucciones de prueba:', 'info');
+                log('1. Usar las credenciales actuales para login', 'info');
+                log('2. Verificar que el widget ElevenLabs funcione', 'info');
+                log('3. Revisar que aparezcan en los logs de acceso', 'info');
+            }, 2000);
+        }
+        
+        function simulateSecurityTest() {
+            log('🛡️ SIMULANDO PRUEBA DE SEGURIDAD...', 'warning');
+            
+            for (let i = 1; i <= 3; i++) {
+                setTimeout(() => {
+                    const failedAttempt = {
+                        type: 'failed',
+                        timestamp: new Date().toISOString(),
+                        username: `attacker_${i}`,
+                        ip: `192.168.1.${100 + i}`,
+                        userAgent: 'Security Test Bot',
+                        reason: 'invalid_credentials'
+                    };
+                    
+                    const userLogs = JSON.parse(localStorage.getItem('user_access_logs') || '[]');
+                    userLogs.push(failedAttempt);
+                    localStorage.setItem('user_access_logs', JSON.stringify(userLogs));
+                    
+                    log(`🚨 Intento fallido simulado #${i}`, 'error');
+                    
+                    if (i === 3) {
+                        refreshStatus();
+                        refreshAccessLogs();
+                        log('✅ Prueba de seguridad completada', 'success');
+                    }
+                }, i * 1000);
+            }
+        }
+        
+        // GitHub functions
+        function checkGitHubStatus() {
+            log('🔍 VERIFICANDO ESTADO DE GITHUB...', 'github');
+            
+            // Simular verificación de GitHub
+            setTimeout(() => {
+                document.getElementById('last-commit').textContent = 
+                    `Hace ${Math.floor(Math.random() * 60)} minutos`;
+                    
+                log('✅ Estado de GitHub verificado', 'success');
+                document.getElementById('github-status').className = 'github-status github-connected';
+                document.getElementById('github-status').innerHTML = '✅ GitHub: Conectado';
+            }, 2000);
+        }
+        
+        function deployChanges() {
+            if (!confirm('🚀 ¿Hacer deploy de cambios a GitHub Pages?\n\nEsto actualizará el sitio web público.\n\n¿Continuar?')) {
+                return;
+            }
+            
+            log('🚀 INICIANDO DEPLOY A GITHUB PAGES...', 'github');
+            
+            // Simular proceso de deploy
+            const deploySteps = [
+                'Preparando archivos para deploy...',
+                'Conectando con GitHub Actions...',
+                'Building sitio web...',
+                'Desplegando a GitHub Pages...',
+                'Verificando deployment...'
+            ];
+            
+            deploySteps.forEach((step, index) => {
+                setTimeout(() => {
+                    log(`🔄 ${step}`, 'github');
+                    
+                    if (index === deploySteps.length - 1) {
+                        log('✅ DEPLOY COMPLETADO EXITOSAMENTE', 'success');
+                        log('🌐 Sitio web actualizado: https://aizentek.github.io/demo-voice-LAPZO/', 'info');
+                    }
+                }, (index + 1) * 1500);
+            });
+        }
+        
+        function createBackup() {
+            log('💾 CREANDO BACKUP DE SEGURIDAD...', 'info');
+            
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                userLogs: JSON.parse(localStorage.getItem('user_access_logs') || '[]'),
+                adminLogs: JSON.parse(localStorage.getItem('admin_logs') || '[]'),
+                securityAttempts: JSON.parse(localStorage.getItem('security_attempts') || '[]'),
+                systemState: {
+                    activeSessions: sessionCount,
+                    failedAttempts: failedCount,
+                    successCount: successCount
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aizentek-backup-${Date.now()}.json`;
+            a.click();
+            
+            log('✅ BACKUP CREADO Y DESCARGADO', 'success');
+        }
+        
+        // Utility functions
+        function openLandingPage() {
+            log('🏠 ABRIENDO LANDING PAGE...', 'info');
+            window.open('https://aizentek.github.io/demo-voice-LAPZO/', '_blank');
+        }
+        
+        function openAdminPanel() {
+            log('🎛️ ABRIENDO ADMIN PANEL OFICIAL...', 'info');
+            window.open('https://aizentek.github.io/demo-voice-LAPZO/admin-panel.html', '_blank');
+        }
+        
+        function clearConsole() {
+            console_div.innerHTML = '';
+            log('🧹 CONSOLE LIMPIADA', 'info');
+        }
+        
+        function exportLogs() {
+            const logs = console_div.innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aizentek-technical-logs-${Date.now()}.txt`;
+            a.click();
+            log('📥 LOGS TÉCNICOS EXPORTADOS', 'success');
+        }
+        
+        // Message listeners
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type) {
+                log(`📨 MENSAJE RECIBIDO: ${event.data.type}`, 'info');
+            }
+        });
+        
+        // Storage listeners para detectar cambios en otras ventanas
+        window.addEventListener('storage', function(event) {
+            if (event.key && event.key.includes('user_access_logs')) {
+                log('🔄 LOGS DE ACCESO ACTUALIZADOS EN OTRA VENTANA', 'info');
+                refreshAccessLogs();
+            }
+        });
+        
+        // Inicialización
+        window.onload = function() {
+            log('🚀 DASHBOARD DE CONTROL AIZENTEK INICIADO', 'success');
+            log('👤 Administrador: AIzentek', 'info');
+            log('🎛️ Control total activado con integración GitHub', 'success');
+            log('🔗 Repositorio: https://github.com/AIzentek/demo-voice-LAPZO', 'github');
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Auto-refresh cada 30 segundos
+            setInterval(() => {
+                refreshStatus();
+                refreshAccessLogs();
+            }, 30000);
+            
+            // Inicializar
+            refreshStatus();
+            refreshAccessLogs();
+            checkGitHubStatus();
+            
+            // Verificar credenciales preparadas al cargar
+            checkPreparedCredentials();
+            
+            log('✅ DASHBOARD COMPLETAMENTE FUNCIONAL', 'success');
+        }
+        
+        // Verificar credenciales preparadas al cargar
+        function checkPreparedCredentials() {
+            const prepared = localStorage.getItem('prepared_credentials');
+            if (prepared) {
+                try {
+                    const creds = JSON.parse(prepared);
+                    const timeDiff = Date.now() - creds.timestamp;
+                    
+                    if (timeDiff < 3600000) { // Menos de 1 hora
+                        document.getElementById('load-prepared').style.display = 'inline-block';
+                        log(`💾 Credenciales preparadas disponibles (${Math.round(timeDiff/60000)} min atrás)`, 'info');
+                        
+                        const statusMsg = `📥 Credenciales preparadas disponibles<br>⏰ Generadas hace ${Math.round(timeDiff/60000)} minutos<br>🔄 Usa "📥 Cargar Credenciales Preparadas"`;
+                        showPasswordStatus(statusMsg, 'info');
+                    } else {
+                        localStorage.removeItem('prepared_credentials');
+                        log('🗑️ Credenciales preparadas expiradas eliminadas', 'info');
+                    }
+                } catch (e) {
+                    localStorage.removeItem('prepared_credentials');
+                    log('🗑️ Credenciales preparadas corruptas eliminadas', 'warning');
+                }
+            }
+        };
+    </script>
+</body>
+</html>

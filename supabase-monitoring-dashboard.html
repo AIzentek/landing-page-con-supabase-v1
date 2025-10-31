@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 MONITOREO EN TIEMPO REAL - Supabase Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header .status {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .panel h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .badge {
+            background: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .badge.success { background: #27ae60; }
+        .badge.warning { background: #f39c12; }
+        .badge.info { background: #3498db; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .stat-card.success { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.warning { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+        .stat-card.info { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .user-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #27ae60;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-item.offline { border-left-color: #e74c3c; }
+        .user-item.expelled { border-left-color: #8e44ad; background: #fdf2e9; }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .user-details {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        
+        .btn.success {
+            background: linear-gradient(45deg, #27ae60, #229954);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+        
+        .btn.nuclear {
+            background: linear-gradient(45deg, #8e44ad, #9b59b6);
+            font-size: 1.1em;
+            padding: 12px 25px;
+        }
+        
+        .log-item {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            border-left: 3px solid #3498db;
+        }
+        
+        .log-item.success { border-left-color: #27ae60; }
+        .log-item.error { border-left-color: #e74c3c; }
+        .log-item.warning { border-left-color: #f39c12; }
+        
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.8em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .config-panel {
+            background: #ecf0f1;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-indicator.online { background: #27ae60; }
+        .status-indicator.offline { background: #e74c3c; }
+        .status-indicator.expelled { background: #8e44ad; }
+        
+        .console {
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .loading {
+            animation: pulse 2s infinite;
+        }
+        
+        .alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .alert.error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert.success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔥 MONITOREO EN TIEMPO REAL</h1>
+        <div class="status">✅ Supabase Session Manager Activo</div>
+    </div>
+    
+    <div class="container">
+        
+        <!-- Panel de Configuración -->
+        <div class="panel" style="grid-column: 1 / -1;">
+            <h2>⚙️ Configuración de Supabase</h2>
+            
+            <div id="config-alert" class="alert" style="display: none;"></div>
+            
+            <div class="config-panel">
+                <input type="text" id="supabase-url" class="config-input" placeholder="https://tu-proyecto.supabase.co">
+                <input type="text" id="supabase-key" class="config-input" placeholder="Tu Supabase anon key">
+                <button class="btn success" onclick="initializeSupabase()">
+                    🚀 Conectar a Supabase
+                </button>
+                <button class="btn info" onclick="testConnection()">
+                    🔍 Probar Conexión
+                </button>
+            </div>
+        </div>
+        
+        <!-- Estadísticas Generales -->
+        <div class="panel">
+            <h2>📊 Estadísticas en Tiempo Real 
+                <span id="stats-badge" class="badge">Actualizando...</span>
+            </h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card success">
+                    <div class="stat-number" id="active-users">0</div>
+                    <div class="stat-label">Usuarios Activos</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-number" id="total-sessions">0</div>
+                    <div class="stat-label">Sesiones Totales</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-number" id="failed-attempts">0</div>
+                    <div class="stat-label">Intentos Fallidos</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-number" id="sessions-today">0</div>
+                    <div class="stat-label">Sesiones Hoy</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn success" onclick="refreshStats()">
+                    🔄 Actualizar Stats
+                </button>
+                <button class="btn info" onclick="exportData()">
+                    📥 Exportar Datos
+                </button>
+            </div>
+        </div>
+        
+        <!-- Control Nuclear -->
+        <div class="panel">
+            <h2>💥 Control Nuclear 
+                <span class="badge danger">PELIGROSO</span>
+            </h2>
+            
+            <div class="controls">
+                <button class="btn nuclear" onclick="nuclearLogoutSupabase()">
+                    💥 EXPULSAR TODOS LOS USUARIOS
+                </button>
+                <button class="btn warning" onclick="cleanOldSessions()">
+                    🧹 Limpiar Sesiones Antiguas
+                </button>
+            </div>
+            
+            <div class="alert">
+                <strong>⚠️ Nuclear Logout:</strong> Esta función expulsará a TODOS los usuarios de TODOS los dispositivos inmediatamente. Es permanente e irreversible.
+            </div>
+        </div>
+        
+        <!-- Usuarios Activos -->
+        <div class="panel">
+            <h2>👥 Usuarios Conectados Ahora 
+                <span id="active-badge" class="badge success">En línea</span>
+            </h2>
+            
+            <div class="controls">
+                <button class="btn success" onclick="refreshActiveUsers()">
+                    🔄 Actualizar Lista
+                </button>
+                <button class="btn info" onclick="toggleAutoRefresh()">
+                    ⏰ Auto-refresh: <span id="auto-status">OFF</span>
+                </button>
+            </div>
+            
+            <div id="active-users-list" class="user-list">
+                <div class="user-item loading">
+                    <div class="user-info">Cargando usuarios activos...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historial de Sesiones -->
+        <div class="panel">
+            <h2>📋 Historial de Sesiones 
+                <span id="history-badge" class="badge info">Últimas 50</span>
+            </h2>
+            
+            <div class="controls">
+                <button class="btn info" onclick="refreshSessionHistory()">
+                    📋 Actualizar Historial
+                </button>
+                <button class="btn warning" onclick="showFailedAttempts()">
+                    ❌ Ver Intentos Fallidos
+                </button>
+            </div>
+            
+            <div id="session-history" class="user-list">
+                <div class="log-item loading">Cargando historial...</div>
+            </div>
+        </div>
+        
+        <!-- Logs en Tiempo Real -->
+        <div class="panel" style="grid-column: 1 / -1;">
+            <h2>📱 Console de Actividad en Tiempo Real</h2>
+            
+            <div class="controls">
+                <button class="btn info" onclick="clearConsole()">
+                    🧹 Limpiar Console
+                </button>
+                <button class="btn success" onclick="downloadLogs()">
+                    💾 Descargar Logs
+                </button>
+            </div>
+            
+            <div class="console" id="activity-console">
+                <div>🚀 Supabase Session Manager - Console Iniciada</div>
+                <div class="timestamp">[${new Date().toLocaleTimeString()}] Sistema listo para monitoreo...</div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="supabase-session-manager.js"></script>
+    <script>
+        // ========================================
+        // VARIABLES GLOBALES
+        // ========================================
+        
+        let supabaseClient = null;
+        let autoRefreshInterval = null;
+        let isAutoRefreshing = false;
+        
+        // ========================================
+        // INICIALIZACIÓN Y CONFIGURACIÓN
+        // ========================================
+        
+        async function initializeSupabase() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-key').value.trim();
+            
+            if (!url || !key) {
+                showAlert('❌ Por favor ingresa URL y Key de Supabase', 'error');
+                return;
+            }
+            
+            try {
+                log('🔄 Conectando a Supabase...', 'info');
+                
+                const { createClient } = supabase;
+                supabaseClient = createClient(url, key);
+                
+                // Probar conexión
+                const { data, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('count(*)')
+                    .limit(1);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                showAlert('✅ Conectado exitosamente a Supabase', 'success');
+                log('✅ Conexión a Supabase establecida', 'success');
+                
+                // Inicializar session manager global
+                window.initSupabaseSessionManager(url, key);
+                
+                // Cargar datos iniciales
+                await refreshAllData();
+                
+                // Habilitar auto-refresh
+                if (!isAutoRefreshing) {
+                    toggleAutoRefresh();
+                }
+                
+            } catch (error) {
+                const errorMsg = `❌ Error conectando a Supabase: ${error.message}`;
+                showAlert(errorMsg, 'error');
+                log(errorMsg, 'error');
+            }
+        }
+        
+        async function testConnection() {
+            if (!supabaseClient) {
+                showAlert('❌ Primero debes conectar a Supabase', 'error');
+                return;
+            }
+            
+            try {
+                log('🔍 Probando conexión...', 'info');
+                
+                const { data, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                log('✅ Conexión exitosa - Base de datos respondiendo', 'success');
+                showAlert('✅ Conexión exitosa', 'success');
+                
+            } catch (error) {
+                log(`❌ Error en conexión: ${error.message}`, 'error');
+                showAlert(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // ========================================
+        // FUNCIONES DE DATOS
+        // ========================================
+        
+        async function refreshAllData() {
+            if (!supabaseClient) {
+                log('❌ Supabase no inicializado', 'error');
+                return;
+            }
+            
+            log('🔄 Actualizando todos los datos...', 'info');
+            
+            await Promise.all([
+                refreshStats(),
+                refreshActiveUsers(),
+                refreshSessionHistory()
+            ]);
+            
+            log('✅ Datos actualizados', 'success');
+        }
+        
+        async function refreshStats() {
+            if (!supabaseClient) return;
+            
+            try {
+                // Obtener estadísticas
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+                
+                // Usuarios activos (heartbeat reciente)
+                const { data: activeUsers, error: activeError } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*')
+                    .eq('status', 'active')
+                    .gt('last_heartbeat', twoMinutesAgo.toISOString());
+                
+                // Total de sesiones
+                const { count: totalSessions, error: totalError } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*', { count: 'exact' });
+                
+                // Intentos fallidos hoy
+                const { count: failedAttempts, error: failedError } = await supabaseClient
+                    .from('login_attempts')
+                    .select('*', { count: 'exact' })
+                    .eq('status', 'failed')
+                    .gt('attempt_time', today.toISOString());
+                
+                // Sesiones exitosas hoy
+                const { count: sessionsToday, error: todayError } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*', { count: 'exact' })
+                    .gt('login_time', today.toISOString());
+                
+                if (activeError || totalError || failedError || todayError) {
+                    throw new Error('Error obteniendo estadísticas');
+                }
+                
+                // Actualizar UI
+                document.getElementById('active-users').textContent = activeUsers?.length || 0;
+                document.getElementById('total-sessions').textContent = totalSessions || 0;
+                document.getElementById('failed-attempts').textContent = failedAttempts || 0;
+                document.getElementById('sessions-today').textContent = sessionsToday || 0;
+                
+                document.getElementById('stats-badge').textContent = 'Actualizado';
+                document.getElementById('stats-badge').className = 'badge success';
+                
+                setTimeout(() => {
+                    document.getElementById('stats-badge').textContent = 'Actualizando...';
+                    document.getElementById('stats-badge').className = 'badge';
+                }, 2000);
+                
+            } catch (error) {
+                log(`❌ Error actualizando stats: ${error.message}`, 'error');
+            }
+        }
+        
+        async function refreshActiveUsers() {
+            if (!supabaseClient) return;
+            
+            try {
+                const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+                
+                const { data: users, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*')
+                    .eq('status', 'active')
+                    .gt('last_heartbeat', twoMinutesAgo.toISOString())
+                    .order('last_heartbeat', { ascending: false });
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                const container = document.getElementById('active-users-list');
+                
+                if (!users || users.length === 0) {
+                    container.innerHTML = `
+                        <div class="user-item offline">
+                            <div class="user-info">
+                                <div class="user-name">No hay usuarios activos</div>
+                                <div class="user-details">Última verificación: ${new Date().toLocaleTimeString()}</div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('active-badge').textContent = 'Sin usuarios';
+                    document.getElementById('active-badge').className = 'badge warning';
+                    return;
+                }
+                
+                container.innerHTML = users.map(user => {
+                    const lastHeartbeat = new Date(user.last_heartbeat);
+                    const timeAgo = Math.round((Date.now() - lastHeartbeat.getTime()) / 1000);
+                    const deviceInfo = user.device_info || {};
+                    
+                    return `
+                        <div class="user-item">
+                            <div class="user-info">
+                                <div class="user-name">
+                                    <span class="status-indicator online"></span>
+                                    ${user.username} (${user.device_id.substring(0, 12)}...)
+                                </div>
+                                <div class="user-details">
+                                    IP: ${user.ip_address || 'N/A'} | 
+                                    Conectado: ${new Date(user.login_time).toLocaleString()} | 
+                                    Último heartbeat: hace ${timeAgo}s |
+                                    ${deviceInfo.platform || 'N/A'}
+                                </div>
+                            </div>
+                            <div class="user-actions">
+                                <button class="btn danger" onclick="expelUser('${user.device_id}')">
+                                    🚪 Expulsar
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('active-badge').textContent = `${users.length} en línea`;
+                document.getElementById('active-badge').className = 'badge success';
+                
+            } catch (error) {
+                log(`❌ Error obteniendo usuarios activos: ${error.message}`, 'error');
+            }
+        }
+        
+        async function refreshSessionHistory() {
+            if (!supabaseClient) return;
+            
+            try {
+                const { data: sessions, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('*')
+                    .order('login_time', { ascending: false })
+                    .limit(50);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                const container = document.getElementById('session-history');
+                
+                if (!sessions || sessions.length === 0) {
+                    container.innerHTML = '<div class="log-item">No hay sesiones registradas</div>';
+                    return;
+                }
+                
+                container.innerHTML = sessions.map(session => {
+                    const loginTime = new Date(session.login_time).toLocaleString();
+                    const deviceInfo = session.device_info || {};
+                    const statusClass = session.status === 'active' ? 'success' : 
+                                       session.status === 'nuclear_logout' ? 'error' : 'warning';
+                    
+                    const statusText = {
+                        'active': '🟢 Activo',
+                        'logged_out': '🔵 Desconectado',
+                        'nuclear_logout': '💥 Expulsado',
+                        'admin_expelled': '🚪 Expulsado por Admin'
+                    }[session.status] || session.status;
+                    
+                    return `
+                        <div class="log-item ${statusClass}">
+                            <strong>${session.username}</strong> (${session.device_id.substring(0, 12)}...) - ${statusText}
+                            <br>
+                            <span class="timestamp">
+                                ${loginTime} | IP: ${session.ip_address || 'N/A'} | 
+                                ${deviceInfo.platform || 'N/A'} | ${deviceInfo.userAgent?.substring(0, 50) || 'N/A'}...
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                log(`❌ Error obteniendo historial: ${error.message}`, 'error');
+            }
+        }
+        
+        // ========================================
+        // FUNCIONES DE ADMINISTRACIÓN
+        // ========================================
+        
+        async function nuclearLogoutSupabase() {
+            if (!supabaseClient) {
+                log('❌ Supabase no inicializado', 'error');
+                return;
+            }
+            
+            if (!confirm('💥 ¿NUCLEAR LOGOUT GLOBAL?\n\nEsta acción:\n- Expulsará a TODOS los usuarios\n- De TODOS los dispositivos\n- Inmediatamente\n- Es irreversible\n\n¿CONTINUAR?')) {
+                return;
+            }
+            
+            try {
+                log('💥 INICIANDO NUCLEAR LOGOUT GLOBAL...', 'error');
+                
+                // Marcar todas las sesiones activas como expulsadas
+                const { error: updateError } = await supabaseClient
+                    .from('user_sessions')
+                    .update({ 
+                        status: 'nuclear_logout',
+                        logout_time: new Date().toISOString(),
+                        logout_reason: 'admin_nuclear_dashboard'
+                    })
+                    .eq('status', 'active');
+                
+                if (updateError) {
+                    throw new Error(updateError.message);
+                }
+                
+                // Registrar evento administrativo
+                const { error: eventError } = await supabaseClient
+                    .from('admin_events')
+                    .insert([{
+                        event_type: 'nuclear_logout_all_dashboard',
+                        admin_device: 'monitoring_dashboard',
+                        timestamp: new Date().toISOString(),
+                        affected_sessions: 'all_active',
+                        details: { source: 'monitoring_dashboard' }
+                    }]);
+                
+                if (eventError) {
+                    console.warn('Error registrando evento admin:', eventError);
+                }
+                
+                log('💥 NUCLEAR LOGOUT COMPLETADO', 'success');
+                log('🌍 TODOS LOS USUARIOS EXPULSADOS DE TODOS LOS DISPOSITIVOS', 'success');
+                
+                // Actualizar datos
+                await refreshAllData();
+                
+            } catch (error) {
+                log(`❌ Error en nuclear logout: ${error.message}`, 'error');
+                showAlert(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function expelUser(deviceId) {
+            if (!supabaseClient) return;
+            
+            if (!confirm(`¿Expulsar usuario con device ID ${deviceId.substring(0, 12)}...?`)) {
+                return;
+            }
+            
+            try {
+                log(`🚪 Expulsando usuario ${deviceId.substring(0, 12)}...`, 'warning');
+                
+                const { error } = await supabaseClient
+                    .from('user_sessions')
+                    .update({ 
+                        status: 'admin_expelled',
+                        logout_time: new Date().toISOString(),
+                        logout_reason: 'admin_expulsion_dashboard'
+                    })
+                    .eq('device_id', deviceId)
+                    .eq('status', 'active');
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                log('✅ Usuario expulsado exitosamente', 'success');
+                await refreshActiveUsers();
+                
+            } catch (error) {
+                log(`❌ Error expulsando usuario: ${error.message}`, 'error');
+            }
+        }
+        
+        async function cleanOldSessions() {
+            if (!supabaseClient) return;
+            
+            if (!confirm('🧹 ¿Limpiar sesiones más antiguas de 7 días?')) {
+                return;
+            }
+            
+            try {
+                const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+                
+                log('🧹 Limpiando sesiones antiguas...', 'info');
+                
+                const { error: sessionsError } = await supabaseClient
+                    .from('user_sessions')
+                    .delete()
+                    .lt('login_time', sevenDaysAgo.toISOString());
+                
+                const { error: attemptsError } = await supabaseClient
+                    .from('login_attempts')
+                    .delete()
+                    .lt('attempt_time', sevenDaysAgo.toISOString());
+                
+                if (sessionsError || attemptsError) {
+                    throw new Error('Error limpiando datos antiguos');
+                }
+                
+                log('✅ Limpieza completada', 'success');
+                await refreshAllData();
+                
+            } catch (error) {
+                log(`❌ Error en limpieza: ${error.message}`, 'error');
+            }
+        }
+        
+        async function showFailedAttempts() {
+            if (!supabaseClient) return;
+            
+            try {
+                const { data: attempts, error } = await supabaseClient
+                    .from('login_attempts')
+                    .select('*')
+                    .eq('status', 'failed')
+                    .order('attempt_time', { ascending: false })
+                    .limit(20);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                const container = document.getElementById('session-history');
+                
+                if (!attempts || attempts.length === 0) {
+                    container.innerHTML = '<div class="log-item success">No hay intentos fallidos registrados</div>';
+                    return;
+                }
+                
+                container.innerHTML = attempts.map(attempt => {
+                    const attemptTime = new Date(attempt.attempt_time).toLocaleString();
+                    const deviceInfo = attempt.device_info || {};
+                    
+                    return `
+                        <div class="log-item error">
+                            <strong>❌ Intento Fallido:</strong> ${attempt.username || 'usuario vacío'} 
+                            (${attempt.device_id.substring(0, 12)}...)
+                            <br>
+                            <span class="timestamp">
+                                ${attemptTime} | IP: ${attempt.ip_address || 'N/A'} | 
+                                ${deviceInfo.platform || 'N/A'} | Razón: ${attempt.reason || 'N/A'}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('history-badge').textContent = 'Intentos Fallidos';
+                document.getElementById('history-badge').className = 'badge danger';
+                
+            } catch (error) {
+                log(`❌ Error obteniendo intentos fallidos: ${error.message}`, 'error');
+            }
+        }
+        
+        // ========================================
+        // FUNCIONES DE UTILIDAD
+        // ========================================
+        
+        function toggleAutoRefresh() {
+            if (isAutoRefreshing) {
+                clearInterval(autoRefreshInterval);
+                isAutoRefreshing = false;
+                document.getElementById('auto-status').textContent = 'OFF';
+                log('⏸️ Auto-refresh desactivado', 'warning');
+            } else {
+                autoRefreshInterval = setInterval(refreshAllData, 30000); // Cada 30 segundos
+                isAutoRefreshing = true;
+                document.getElementById('auto-status').textContent = 'ON (30s)';
+                log('▶️ Auto-refresh activado (cada 30 segundos)', 'success');
+            }
+        }
+        
+        function showAlert(message, type = 'info') {
+            const alert = document.getElementById('config-alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('activity-console');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            
+            console.appendChild(logEntry);
+            console.scrollTop = console.scrollHeight;
+            
+            // Limitar a 100 mensajes
+            while (console.children.length > 100) {
+                console.removeChild(console.firstChild);
+            }
+        }
+        
+        function clearConsole() {
+            document.getElementById('activity-console').innerHTML = '';
+            log('🧹 Console limpiado', 'info');
+        }
+        
+        async function exportData() {
+            if (!supabaseClient) {
+                log('❌ Supabase no inicializado', 'error');
+                return;
+            }
+            
+            try {
+                log('📥 Exportando datos...', 'info');
+                
+                const [sessions, attempts, events] = await Promise.all([
+                    supabaseClient.from('user_sessions').select('*'),
+                    supabaseClient.from('login_attempts').select('*'),
+                    supabaseClient.from('admin_events').select('*')
+                ]);
+                
+                const exportData = {
+                    export_date: new Date().toISOString(),
+                    user_sessions: sessions.data || [],
+                    login_attempts: attempts.data || [],
+                    admin_events: events.data || [],
+                    summary: {
+                        total_sessions: sessions.data?.length || 0,
+                        failed_attempts: attempts.data?.length || 0,
+                        admin_events: events.data?.length || 0
+                    }
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `supabase-session-data-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                log('✅ Datos exportados exitosamente', 'success');
+                
+            } catch (error) {
+                log(`❌ Error exportando datos: ${error.message}`, 'error');
+            }
+        }
+        
+        function downloadLogs() {
+            const console = document.getElementById('activity-console');
+            const logs = Array.from(console.children).map(child => child.textContent).join('\n');
+            
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `monitoring-logs-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            log('💾 Logs descargados', 'success');
+        }
+        
+        // ========================================
+        // INICIALIZACIÓN
+        // ========================================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Dashboard de Monitoreo iniciado', 'success');
+            log('⚠️ Configure las credenciales de Supabase para comenzar', 'warning');
+            
+            // Auto-focus en URL input
+            document.getElementById('supabase-url').focus();
+        });
+    </script>
+</body>
+</html>

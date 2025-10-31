@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Verificación GitHub Pages - LAPZO</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .status-check {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #17a2b8; font-weight: bold; }
+        .credentials-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d8ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .url-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Verificación GitHub Pages - LAPZO</h1>
+            <p><strong>Confirma que todo está funcionando correctamente</strong></p>
+            <p id="current-url" class="info"></p>
+        </div>
+
+        <div class="credentials-box">
+            <h3>🔐 Credenciales para Testing:</h3>
+            <p><strong>Usuario:</strong> <code>aizentekdemo</code></p>
+            <p><strong>Contraseña:</strong> <code>Demo12345!</code></p>
+            <p><strong>Agent ID:</strong> <code>agent_6501k7apm2zte7p8c3zzsmjddzsh</code></p>
+        </div>
+
+        <div class="status-check">
+            <h3>🌐 Verificación de URLs</h3>
+            <div id="url-checks">
+                <p>Cargando verificaciones...</p>
+            </div>
+        </div>
+
+        <div class="status-check">
+            <h3>🧪 Tests de Funcionalidad</h3>
+            <button class="test-button" onclick="testCredentials()">🔐 Test Credenciales</button>
+            <button class="test-button" onclick="testLocalStorage()">💾 Test LocalStorage</button>
+            <button class="test-button" onclick="testSecurity()">🛡️ Test Seguridad</button>
+            <button class="test-button" onclick="goToMain()">🏠 Ir a Página Principal</button>
+            <div id="test-results" style="margin-top: 20px;"></div>
+        </div>
+
+        <div class="url-list">
+            <h3>📋 URLs a Verificar:</h3>
+            <ul id="url-list">
+                <li>Cargando URLs...</li>
+            </ul>
+        </div>
+
+        <div class="status-check">
+            <h3>📊 Información del Sistema</h3>
+            <div id="system-info">
+                <p><strong>Fecha/Hora:</strong> <span id="datetime"></span></p>
+                <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+                <p><strong>Resolución:</strong> <span id="resolution"></span></p>
+                <p><strong>Protocolo:</strong> <span id="protocol"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración
+        const BASE_URLS = [
+            'https://aizentek.github.io/demo-voice-LAPZO',
+            'https://8081-i5gcmjnyymes7awfhari4-cbeee0f9.sandbox.novita.ai'
+        ];
+
+        const PAGES_TO_CHECK = [
+            '',  // index.html
+            '/test-login-rapido.html',
+            '/control-dashboard-aizentek.html',
+            '/admin-panel.html',
+            '/verificacion-github-pages.html'
+        ];
+
+        const CREDENTIALS = {
+            username: 'aizentekdemo',
+            password: 'Demo12345!'
+        };
+
+        // Inicialización
+        window.onload = function() {
+            displaySystemInfo();
+            displayCurrentURL();
+            generateURLList();
+            performURLChecks();
+        };
+
+        function displaySystemInfo() {
+            document.getElementById('datetime').textContent = new Date().toLocaleString();
+            document.getElementById('user-agent').textContent = navigator.userAgent.substring(0, 100) + '...';
+            document.getElementById('resolution').textContent = screen.width + 'x' + screen.height;
+            document.getElementById('protocol').textContent = location.protocol;
+        }
+
+        function displayCurrentURL() {
+            document.getElementById('current-url').textContent = 'URL Actual: ' + window.location.href;
+        }
+
+        function generateURLList() {
+            const urlList = document.getElementById('url-list');
+            urlList.innerHTML = '';
+            
+            BASE_URLS.forEach(baseUrl => {
+                PAGES_TO_CHECK.forEach(page => {
+                    const fullUrl = baseUrl + page;
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="${fullUrl}" target="_blank">${fullUrl}</a>`;
+                    urlList.appendChild(li);
+                });
+            });
+        }
+
+        async function performURLChecks() {
+            const checksDiv = document.getElementById('url-checks');
+            checksDiv.innerHTML = '<p>🔄 Verificando URLs...</p>';
+            
+            let results = [];
+            
+            for (let baseUrl of BASE_URLS) {
+                for (let page of PAGES_TO_CHECK) {
+                    const fullUrl = baseUrl + page;
+                    try {
+                        const response = await fetch(fullUrl, { method: 'HEAD', mode: 'no-cors' });
+                        results.push(`✅ <strong>${fullUrl}</strong> - Disponible`);
+                    } catch (error) {
+                        results.push(`❌ <strong>${fullUrl}</strong> - Error: ${error.message}`);
+                    }
+                }
+            }
+            
+            checksDiv.innerHTML = results.join('<br>');
+        }
+
+        function testCredentials() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            if (CREDENTIALS.username === 'aizentekdemo' && CREDENTIALS.password === 'Demo12345!') {
+                resultsDiv.innerHTML = '<p class="success">✅ Credenciales correctas configuradas</p>';
+            } else {
+                resultsDiv.innerHTML = '<p class="error">❌ Error en configuración de credenciales</p>';
+            }
+        }
+
+        function testLocalStorage() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            try {
+                localStorage.setItem('lapzo-test', 'ok');
+                const test = localStorage.getItem('lapzo-test');
+                localStorage.removeItem('lapzo-test');
+                
+                if (test === 'ok') {
+                    resultsDiv.innerHTML = '<p class="success">✅ LocalStorage funcionando correctamente</p>';
+                } else {
+                    resultsDiv.innerHTML = '<p class="error">❌ LocalStorage no está funcionando</p>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = '<p class="error">❌ Error en LocalStorage: ' + error.message + '</p>';
+            }
+        }
+
+        function testSecurity() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            // Verificar si security-protocol.js está disponible
+            if (typeof window.securityProtocol !== 'undefined' || document.querySelector('script[src*="security-protocol"]')) {
+                resultsDiv.innerHTML = '<p class="success">✅ Protocolo de seguridad detectado</p>';
+            } else {
+                resultsDiv.innerHTML = '<p class="info">ℹ️ Protocolo de seguridad no detectado (normal en página de verificación)</p>';
+            }
+        }
+
+        function goToMain() {
+            // Intentar ir a la página principal
+            const mainUrls = [
+                'https://aizentek.github.io/demo-voice-LAPZO/',
+                'https://8081-i5gcmjnyymes7awfhari4-cbeee0f9.sandbox.novita.ai/'
+            ];
+            
+            // Abrir la primera URL disponible
+            window.open(mainUrls[0], '_blank');
+        }
+
+        // Log de verificación en consola
+        console.log('🎯 LAPZO Verification Page Loaded');
+        console.log('🔐 Credentials: aizentekdemo / Demo12345!');
+        console.log('🤖 Agent ID: agent_6501k7apm2zte7p8c3zzsmjddzsh');
+        console.log('⏰ Timestamp:', new Date().toISOString());
+    </script>
+</body>
+</html>

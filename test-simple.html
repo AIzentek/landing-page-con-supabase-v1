@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LAPZO Test - GitHub Pages</title>
+    <meta charset="UTF-8">
+    <style>
+        body { 
+            font-family: Arial; 
+            margin: 40px; 
+            background: #f0f0f0; 
+            text-align: center;
+        }
+        .container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 10px; 
+            max-width: 600px; 
+            margin: 0 auto;
+        }
+        h1 { color: #4CAF50; }
+        .credentials { 
+            background: #e7f3ff; 
+            padding: 20px; 
+            border-radius: 5px; 
+            margin: 20px 0;
+        }
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ LAPZO - GitHub Pages Test</h1>
+        <p><strong>Status: GitHub Pages está funcionando!</strong></p>
+        
+        <div class="credentials">
+            <h3>🔐 Credenciales de Acceso:</h3>
+            <p><strong>Usuario:</strong> aizentekdemo</p>
+            <p><strong>Contraseña:</strong> Demo12345!</p>
+        </div>
+        
+        <p><strong>Timestamp:</strong> <span id="time"></span></p>
+        
+        <a href="index.html" class="button">🏠 Ir a Página Principal</a>
+        <a href="test-login-rapido.html" class="button">🧪 Test Rápido</a>
+        
+        <script>
+            document.getElementById('time').textContent = new Date().toLocaleString();
+            console.log('✅ LAPZO GitHub Pages is working!');
+            console.log('🔐 Credentials: aizentekdemo / Demo12345!');
+        </script>
+    </div>
+</body>
+</html>

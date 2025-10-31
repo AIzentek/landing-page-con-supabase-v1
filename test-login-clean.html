@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Login Limpio - AIzentek</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .widget-container {
+            margin: 30px 0;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #333;">🧪 Test Login Limpio</h1>
+        <p style="text-align: center; color: #666;">Página de prueba sin caché - Credenciales garantizadas</p>
+        
+        <div id="login-section">
+            <div class="input-group">
+                <label for="username">👤 Usuario:</label>
+                <input type="text" id="username" value="aizentek" placeholder="Usuario">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">🔐 Contraseña:</label>
+                <input type="password" id="password" value="Lorenzo1988!" placeholder="Contraseña">
+            </div>
+            
+            <button class="btn" onclick="testLogin()">🔐 Probar Login</button>
+        </div>
+        
+        <div id="status" class="status info" style="display: none;">
+            <!-- Credenciales ocultas por seguridad -->
+        </div>
+        
+        <div id="success-section" style="display: none;">
+            <div class="status success">
+                ✅ <strong>LOGIN EXITOSO</strong><br>
+                Las credenciales funcionan perfectamente
+            </div>
+            
+            <div class="widget-container">
+                <h2>🤖 Widget ElevenLabs</h2>
+                <p>Aquí aparecería el widget conversacional</p>
+                
+                <!-- Widget ElevenLabs real -->
+                <script>
+                (function () {
+                  function hideBrandingIn(root) {
+                    try {
+                      root.querySelectorAll('a[href="https://elevenlabs.io/conversational-ai"]').forEach(a => {
+                        const p = a.closest('p');
+                        if (p) p.style.setProperty('display','none','important');
+                      });
+                      root.querySelectorAll('p').forEach(p => {
+                        const t = (p.textContent || '').trim();
+                        if (t.includes('Powered by ElevenLabs')) {
+                          p.style.setProperty('display','none','important');
+                        }
+                      });
+                    } catch (e) {}
+                  }
+                  function observeRoot(root) {
+                    hideBrandingIn(root);
+                    const mo = new MutationObserver(() => hideBrandingIn(root));
+                    mo.observe(root, { childList: true, subtree: true });
+                  }
+                  const _attach = Element.prototype.attachShadow;
+                  if (_attach) {
+                    Element.prototype.attachShadow = function(init) {
+                      const patched = Object.assign({}, init || {}, { mode: 'open' });
+                      const shadow = _attach.call(this, patched);
+                      observeRoot(shadow);
+                      return shadow;
+                    };
+                  }
+                  observeRoot(document);
+                })();
+                </script>
+                
+                <elevenlabs-convai agent-id="agent_6501k7apm2zte7p8c3zzsmjddzsh"></elevenlabs-convai>
+                <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+            </div>
+            
+            <button class="btn" onclick="logout()" style="background: #dc3545;">🚪 Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Credenciales exactas del código
+        const VALID_CREDENTIALS = {
+            username: 'aizentek',
+            password: 'Lorenzo1988!'
+        };
+        
+        const SESSION_KEY = 'test_clean_session';
+        
+        function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('status');
+            
+            // Limpiar cualquier sesión previa
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            if (username === VALID_CREDENTIALS.username && password === VALID_CREDENTIALS.password) {
+                // Login exitoso
+                localStorage.setItem(SESSION_KEY, 'true');
+                
+                statusDiv.className = 'status success';
+                statusDiv.innerHTML = '✅ <strong>LOGIN EXITOSO</strong><br>¡Las credenciales funcionan perfectamente!';
+                
+                // Mostrar sección de éxito
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('success-section').style.display = 'block';
+                
+                // Mostrar widget después de 2 segundos
+                setTimeout(() => {
+                    document.querySelector('.widget-container').style.display = 'block';
+                }, 2000);
+                
+            } else {
+                // Login fallido
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = `❌ <strong>CREDENCIALES INCORRECTAS</strong><br>
+                    Intentaste: ${username} / ${password}<br>
+                    Correcto: ${VALID_CREDENTIALS.username} / ${VALID_CREDENTIALS.password}`;
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem(SESSION_KEY);
+            location.reload();
+        }
+        
+        // Auto-login si ya hay sesión
+        window.onload = function() {
+            if (localStorage.getItem(SESSION_KEY) === 'true') {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('success-section').style.display = 'block';
+                document.querySelector('.widget-container').style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>

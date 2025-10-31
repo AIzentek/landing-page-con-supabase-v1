@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Logout Nuclear</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .test-container { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .btn { padding: 15px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-nuclear { background: #ff0000; color: white; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Logout Nuclear</h1>
+    
+    <div class="test-container">
+        <h2>📋 Estado Actual</h2>
+        <div id="current-status" class="status">
+            Verificando sesiones...
+        </div>
+        
+        <h3>🔧 Acciones de Prueba</h3>
+        <button class="btn btn-success" onclick="createTestSessions()">
+            🔑 Crear Sesiones de Prueba
+        </button>
+        
+        <button class="btn btn-nuclear" onclick="testNuclearLogout()">
+            💥 PROBAR LOGOUT NUCLEAR
+        </button>
+        
+        <button class="btn btn-success" onclick="checkStatus()">
+            🔄 Verificar Estado
+        </button>
+    </div>
+    
+    <div class="test-container">
+        <h2>📊 Logs del Test</h2>
+        <div id="test-logs" style="background: #000; color: #0f0; padding: 15px; font-family: monospace; height: 300px; overflow-y: auto;">
+            <!-- Logs aparecerán aquí -->
+        </div>
+    </div>
+
+    <script>
+        const logContainer = document.getElementById('test-logs');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#0f0',
+                warning: '#ff0',
+                error: '#f00',
+                success: '#0ff'
+            };
+            
+            logContainer.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span><br>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function createTestSessions() {
+            log('🔧 Creando sesiones de prueba...', 'info');
+            
+            // Crear múltiples sesiones de prueba
+            const testSessions = [
+                'aizentek_session_lorenzo1988',
+                'test_session_1',
+                'test_session_2',
+                'user_session_demo',
+                'admin_session_test'
+            ];
+            
+            testSessions.forEach((session, index) => {
+                localStorage.setItem(session, 'true');
+                log(`✅ Sesión creada: ${session}`, 'success');
+            });
+            
+            // Crear algunos datos adicionales
+            localStorage.setItem('user_data', JSON.stringify({user: 'test', timestamp: Date.now()}));
+            localStorage.setItem('demo_data', 'test_data_' + Date.now());
+            
+            log(`🎯 Total sesiones creadas: ${testSessions.length}`, 'info');
+            checkStatus();
+        }
+        
+        function testNuclearLogout() {
+            log('💥 INICIANDO TEST DE LOGOUT NUCLEAR...', 'error');
+            
+            const beforeCount = Object.keys(localStorage).length;
+            log(`📊 Items en localStorage ANTES: ${beforeCount}`, 'warning');
+            
+            // Simular función nuclear (versión simplificada)
+            const adminLogs = JSON.parse(localStorage.getItem('admin_logs') || '[]');
+            adminLogs.push({
+                type: 'nuclear_test',
+                timestamp: new Date().toISOString(),
+                beforeCount: beforeCount,
+                method: 'test_nuclear'
+            });
+            
+            // NUCLEAR CLEAN
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Restaurar solo logs administrativos
+            localStorage.setItem('admin_logs', JSON.stringify(adminLogs));
+            
+            const afterCount = Object.keys(localStorage).length;
+            log(`💥 LOGOUT NUCLEAR COMPLETADO`, 'success');
+            log(`📊 Items DESPUÉS: ${afterCount}`, 'info');
+            log(`🧹 Items eliminados: ${beforeCount - afterCount}`, 'warning');
+            
+            // Broadcast para otras ventanas
+            try {
+                window.postMessage({type: 'NUCLEAR_LOGOUT', test: true, timestamp: Date.now()}, '*');
+                log('📢 Mensaje nuclear enviado a otras ventanas', 'info');
+            } catch (e) {
+                log('⚠️ Error enviando mensaje: ' + e.message, 'error');
+            }
+            
+            checkStatus();
+        }
+        
+        function checkStatus() {
+            const keys = Object.keys(localStorage);
+            const sessionKeys = keys.filter(k => k.includes('session') || k.includes('auth'));
+            const statusDiv = document.getElementById('current-status');
+            
+            log(`🔍 Verificando estado actual...`, 'info');
+            log(`📊 Total localStorage items: ${keys.length}`, 'info');
+            log(`🔑 Sesiones encontradas: ${sessionKeys.length}`, sessionKeys.length > 0 ? 'warning' : 'success');
+            
+            if (sessionKeys.length > 0) {
+                sessionKeys.forEach(key => {
+                    log(`   - ${key}: ${localStorage.getItem(key)}`, 'warning');
+                });
+                statusDiv.innerHTML = `⚠️ <strong>${sessionKeys.length} sesiones activas</strong><br>Logout nuclear disponible`;
+                statusDiv.className = 'status warning';
+            } else {
+                log('✅ No hay sesiones activas - Sistema limpio', 'success');
+                statusDiv.innerHTML = '✅ <strong>Sistema limpio</strong><br>No hay sesiones activas';
+                statusDiv.className = 'status success';
+            }
+            
+            // Verificar listener de mensajes
+            log('👂 Configurando listener para mensajes nucleares...', 'info');
+        }
+        
+        // Listener para logout nuclear (como en script.js real)
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'NUCLEAR_LOGOUT') {
+                log('💥 MENSAJE NUCLEAR RECIBIDO', 'error');
+                log(`📅 Timestamp: ${event.data.timestamp}`, 'info');
+                if (event.data.test) {
+                    log('🧪 Este es un mensaje de prueba', 'warning');
+                } else {
+                    log('🚨 Este sería un logout real', 'error');
+                    // localStorage.clear();
+                    // sessionStorage.clear();
+                    // location.reload();
+                }
+            }
+        });
+        
+        // Inicializar
+        log('🚀 Test de logout nuclear inicializado', 'success');
+        log('📋 Usa los botones para probar la funcionalidad', 'info');
+        checkStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Voice - Acceso Seguro</title>
+    <meta name="description" content="Landing page segura con widget ElevenLabs - Demo conversacional de IA">
+    <meta name="keywords" content="ElevenLabs, IA conversacional, demo, voice AI">
+    <meta name="author" content="AIzentek">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aizentek.github.io/demo-voice-LAPZO/">
+    <meta property="og:title" content="Demo Voice - Acceso Seguro">
+    <meta property="og:description" content="Landing page segura con widget ElevenLabs - Demo conversacional de IA">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://aizentek.github.io/demo-voice-LAPZO/">
+    <meta property="twitter:title" content="Demo Voice - Acceso Seguro">
+    <meta property="twitter:description" content="Landing page segura con widget ElevenLabs - Demo conversacional de IA">
+    
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiM2NjdlZWEiLz4KPHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI3IiB5PSI3Ij4KPHBhdGggZD0iTTkgMTNIMTBWMTRIOVYxM1pNOSA0SDEwVjEySDE0VjExSDExVjVIMTRWNEg5WiIgZmlsbD0id2hpdGUiLz4KPHN2Zz4KPHN2Zz4K">
+</head>
+<body>
+    <div class="container">
+        <!-- Formulario de Login -->
+        <div id="login-form" class="login-container">
+            <div class="login-box">
+                <h1>Acceso Seguro</h1>
+                <p class="subtitle">Ingresa tus credenciales para continuar</p>
+                
+                <form id="loginForm" onsubmit="return handleLogin(event)">
+                    <div class="input-group">
+                        <label for="username">Usuario</label>
+                        <input type="text" id="username" name="username" required placeholder="Ingresa tu usuario">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="password">Contraseña</label>
+                        <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña">
+                    </div>
+                    
+                    <button type="submit" class="login-btn">Iniciar Sesión</button>
+                    
+                    <div id="error-message" class="error-message" style="display: none;">
+                        Credenciales incorrectas. Por favor, intenta nuevamente.
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Contenido Principal (oculto inicialmente) -->
+        <div id="main-content" class="main-content" style="display: none;">
+            <div class="header">
+                <h1>Bienvenido a tu agente de voz Lapzo</h1>
+                <button onclick="logout()" class="logout-btn">Cerrar Sesión</button>
+            </div>
+            
+            <div class="widget-container">
+                <h2>Asistente Virtual</h2>
+                <p>Interactúa con nuestro asistente de IA conversacional</p>
+                
+                <!-- Logo Lapzo -->
+                <div style="text-align: center; margin: 20px 0;">
+                    <img src="https://page.gensparksite.com/v1/base64_upload/d67dee24efed0026388f730038b81478" 
+                         alt="Lapzo" 
+                         style="max-width: 200px; height: auto;">
+                </div>
+                
+                <!-- 1) Parche: forzar todos los shadow roots a 'open' y ocultar solo el branding -->
+                <script>
+                (function () {
+                  // --- utilidades ---
+                  function hideBrandingIn(root) {
+                    try {
+                      // Busca el enlace oficial del crédito
+                      root.querySelectorAll('a[href="https://elevenlabs.io/conversational-ai"]').forEach(a => {
+                        const p = a.closest('p');
+                        if (p) p.style.setProperty('display','none','important');
+                      });
+                      // Por si cambian el markup: detectar el texto
+                      root.querySelectorAll('p').forEach(p => {
+                        const t = (p.textContent || '').trim();
+                        if (t.includes('Powered by ElevenLabs')) {
+                          p.style.setProperty('display','none','important');
+                        }
+                      });
+                    } catch (e) {}
+                  }
+                  function observeRoot(root) {
+                    hideBrandingIn(root);
+                    const mo = new MutationObserver(() => hideBrandingIn(root));
+                    mo.observe(root, { childList: true, subtree: true });
+                  }
+                  // --- parche de attachShadow: convertir 'closed' en 'open' ---
+                  const _attach = Element.prototype.attachShadow;
+                  if (_attach) {
+                    Element.prototype.attachShadow = function(init) {
+                      const patched = Object.assign({}, init || {}, { mode: 'open' });
+                      const shadow = _attach.call(this, patched);
+                      observeRoot(shadow);
+                      return shadow;
+                    };
+                  }
+                  // observar también el documento principal
+                  observeRoot(document);
+                })();
+                </script>
+                
+                <!-- 2) Tu widget (debe ir DESPUÉS del parche) -->
+                <elevenlabs-convai agent-id="agent_6501k7apm2zte7p8c3zzsmjddzsh"></elevenlabs-convai>
+                <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+            </div>
+        </div>
+    </div>
+
+    <script src="./cache-refresh.js"></script>
+    <script src="./security-protocol.js"></script>
+    <script src="./script.js"></script>
+    
+    <!-- 🚨 LISTENER URGENTE PARA LOGOUT FORZADO - DESACTIVADO TEMPORALMENTE PARA DEMO -->
+    <script>
+        console.log('🚨 DEMO MODE: Verificaciones automáticas DESACTIVADAS');
+        
+        // ⚡ VERIFICACIÓN DESACTIVADA PARA DEMO
+        // La verificación agresiva está causando expulsión automática
+        // setTimeout(() => {
+        //     console.log('✅ Verificación de sesión en modo demo - SIN auto-logout');
+        // }, 5000);
+        
+        // ⚡ LISTENER SOLO PARA NUCLEAR LOGOUT (mantener funcionalidad del dashboard)
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'NUCLEAR_LOGOUT') {
+                console.log('💥 NUCLEAR LOGOUT RECIBIDO desde dashboard');
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('⚡ SESIÓN TERMINADA POR ADMINISTRADOR');
+                location.reload();
+            }
+        });
+        
+        // ⚡ STORAGE EVENTS DESACTIVADOS TEMPORALMENTE PARA DEMO
+        // window.addEventListener('storage', function(event) {
+        //     console.log('🔄 Storage event detectado pero IGNORADO en modo demo');
+        // });
+        
+        console.log('✅ LISTENERS DE EMERGENCIA CONFIGURADOS');
+    </script>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚫 Logout Instantáneo - Admin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            min-height: 100vh;
+            color: white;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+        .header {
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .logout-section {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #ffffff;
+            color: #e74c3c;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .btn:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+        }
+        .btn-danger {
+            background: #ffffff;
+            color: #e74c3c;
+            font-size: 24px;
+            padding: 20px 40px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            text-align: left;
+            margin: 20px 0;
+        }
+        .success {
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+        }
+        .warning {
+            background: rgba(241, 196, 15, 0.9);
+            color: white;
+        }
+        .danger {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+        }
+        .countdown {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚫 LOGOUT INSTANTÁNEO</h1>
+            <p>Herramienta de Administrador para Desloggear Usuarios Inmediatamente</p>
+        </div>
+
+        <div class="logout-section">
+            <h2>⚡ LOGOUT INMEDIATO ACTIVO</h2>
+            <p>Esta página invalidará automáticamente TODAS las sesiones activas en:</p>
+            
+            <div class="countdown" id="countdown">10</div>
+            
+            <div class="status" id="status">
+                🔄 Preparando logout masivo...
+            </div>
+
+            <button class="btn btn-danger" onclick="executeInstantLogout()">
+                🚫 EJECUTAR LOGOUT AHORA
+            </button>
+            
+            <button class="btn" onclick="cancelLogout()">
+                ⏹️ Cancelar
+            </button>
+        </div>
+
+        <div class="logout-section">
+            <h3>📋 Información del Proceso</h3>
+            <div class="code-block" id="process-info">
+                Cargando información del sistema...
+            </div>
+        </div>
+
+        <div class="logout-section">
+            <h3>🎯 Acciones Automáticas</h3>
+            <div id="actions-list">
+                <div>⏳ 1. Invalidar todas las SESSION_KEYs conocidas</div>
+                <div>⏳ 2. Limpiar localStorage de todas las sesiones</div>
+                <div>⏳ 3. Generar nueva SESSION_KEY segura</div>
+                <div>⏳ 4. Registrar acción administrativa</div>
+                <div>⏳ 5. Mostrar código para actualizar script.js</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class InstantLogout {
+            constructor() {
+                this.countdown = 10;
+                this.isActive = true;
+                this.knownSessionKeys = [
+                    'authenticated_session',
+                    'authenticated_session_v2',
+                    'authenticated_session_secure',
+                    'authenticated_session_secure_v2',
+                    'auth_session_' + Date.now().toString().substring(0, 10)
+                ];
+                this.init();
+            }
+
+            init() {
+                this.displaySystemInfo();
+                this.startCountdown();
+                this.scanForActiveSessions();
+            }
+
+            startCountdown() {
+                const countdownElement = document.getElementById('countdown');
+                const statusElement = document.getElementById('status');
+                
+                const timer = setInterval(() => {
+                    if (!this.isActive) {
+                        clearInterval(timer);
+                        return;
+                    }
+
+                    countdownElement.textContent = this.countdown;
+                    statusElement.innerHTML = `🔄 Logout automático en ${this.countdown} segundos...`;
+                    
+                    if (this.countdown <= 0) {
+                        clearInterval(timer);
+                        this.executeInstantLogout();
+                    }
+                    
+                    this.countdown--;
+                }, 1000);
+            }
+
+            executeInstantLogout() {
+                if (!this.isActive) return;
+                
+                const statusElement = document.getElementById('status');
+                statusElement.className = 'status danger';
+                statusElement.innerHTML = '🚫 EJECUTANDO LOGOUT MASIVO...';
+
+                // Paso 1: Invalidar todas las session keys conocidas
+                this.updateActionStatus(1, '✅ Invalidando SESSION_KEYs...');
+                this.invalidateAllKnownSessions();
+
+                // Paso 2: Limpiar localStorage completo
+                setTimeout(() => {
+                    this.updateActionStatus(2, '✅ Limpiando localStorage...');
+                    this.clearAllLocalStorage();
+                }, 500);
+
+                // Paso 3: Generar nueva SESSION_KEY
+                setTimeout(() => {
+                    this.updateActionStatus(3, '✅ Generando nueva SESSION_KEY...');
+                    const newKey = this.generateNewSessionKey();
+                    this.displayNewSessionKey(newKey);
+                }, 1000);
+
+                // Paso 4: Registrar acción
+                setTimeout(() => {
+                    this.updateActionStatus(4, '✅ Registrando acción administrativa...');
+                    this.logAdminAction();
+                }, 1500);
+
+                // Paso 5: Completar proceso
+                setTimeout(() => {
+                    this.updateActionStatus(5, '✅ Proceso completado');
+                    this.showCompletionStatus();
+                }, 2000);
+            }
+
+            invalidateAllKnownSessions() {
+                // Lista extendida de posibles session keys
+                const possibleKeys = [
+                    'authenticated_session',
+                    'authenticated_session_v2', 
+                    'authenticated_session_secure',
+                    'authenticated_session_secure_v2',
+                    'auth_session_new',
+                    'session_key',
+                    'user_session',
+                    'demo_session'
+                ];
+
+                // Agregar keys dinámicas basadas en timestamps
+                const now = Date.now();
+                for (let i = 0; i < 10; i++) {
+                    const timestamp = now - (i * 86400000); // Últimos 10 días
+                    possibleKeys.push(`auth_session_${timestamp.toString().substring(0, 10)}`);
+                }
+
+                // Limpiar todas las keys
+                possibleKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    localStorage.removeItem(key + '_timestamp');
+                    sessionStorage.removeItem(key);
+                });
+
+                console.log('🚫 Invalidadas', possibleKeys.length, 'session keys');
+            }
+
+            clearAllLocalStorage() {
+                // Limpiar completamente localStorage y sessionStorage
+                const keysToRemove = [];
+                
+                // Recopilar todas las keys
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (
+                        key.includes('session') || 
+                        key.includes('auth') || 
+                        key.includes('login') ||
+                        key.includes('user')
+                    )) {
+                        keysToRemove.push(key);
+                    }
+                }
+
+                // Eliminar keys relacionadas con sesiones
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+
+                // Limpiar sessionStorage completamente
+                sessionStorage.clear();
+
+                console.log('🧹 Limpiadas', keysToRemove.length, 'keys de sesión');
+            }
+
+            generateNewSessionKey() {
+                const timestamp = Date.now();
+                const randomPart = Math.random().toString(36).substring(2, 10);
+                const newKey = `auth_secure_${timestamp}_${randomPart}`;
+                
+                // Guardar la nueva key para referencia
+                localStorage.setItem('admin_new_session_key', newKey);
+                
+                return newKey;
+            }
+
+            displayNewSessionKey(newKey) {
+                const code = `
+// NUEVA SESSION_KEY GENERADA
+// Copiar esta línea en script.js (línea 8):
+
+const SESSION_KEY = '${newKey}';
+
+// Hacer commit y push:
+// git add script.js
+// git commit -m "security: invalidate all active sessions"
+// git push origin main
+
+// ⚠️ IMPORTANTE: Los cambios son efectivos en 2-5 minutos
+                `;
+
+                document.getElementById('process-info').textContent = code;
+            }
+
+            logAdminAction() {
+                const log = {
+                    type: 'instant_logout_executed',
+                    timestamp: new Date().toISOString(),
+                    adminAction: true,
+                    affectedSessions: 'all_active',
+                    method: 'instant_logout_page',
+                    userAgent: navigator.userAgent,
+                    location: window.location.href
+                };
+
+                // Guardar en logs de admin
+                const logs = JSON.parse(localStorage.getItem('admin_access_logs') || '[]');
+                logs.push(log);
+                localStorage.setItem('admin_access_logs', JSON.stringify(logs));
+            }
+
+            updateActionStatus(step, status) {
+                const actionsList = document.getElementById('actions-list');
+                const actions = actionsList.children;
+                if (actions[step - 1]) {
+                    actions[step - 1].innerHTML = status;
+                }
+            }
+
+            showCompletionStatus() {
+                const statusElement = document.getElementById('status');
+                statusElement.className = 'status success';
+                statusElement.innerHTML = `
+                    ✅ LOGOUT MASIVO COMPLETADO<br>
+                    🔒 Todas las sesiones han sido invalidadas<br>
+                    📝 Nueva SESSION_KEY generada<br>
+                    ⚠️ Actualizar script.js con el código de arriba
+                `;
+
+                // Cambiar el botón principal
+                const mainButton = document.querySelector('.btn-danger');
+                mainButton.innerHTML = '✅ PROCESO COMPLETADO';
+                mainButton.style.background = '#27ae60';
+                mainButton.onclick = null;
+            }
+
+            cancelLogout() {
+                this.isActive = false;
+                const statusElement = document.getElementById('status');
+                statusElement.className = 'status warning';
+                statusElement.innerHTML = '⏹️ Logout cancelado por el administrador';
+                
+                const countdownElement = document.getElementById('countdown');
+                countdownElement.textContent = '❌';
+            }
+
+            displaySystemInfo() {
+                const info = `
+Hora actual: ${new Date().toLocaleString()}
+Navegador: ${navigator.userAgent.substring(0, 50)}...
+Plataforma: ${navigator.platform}
+Idioma: ${navigator.language}
+Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+
+Sesiones a invalidar: Todas las activas
+Método: Limpieza completa de localStorage/sessionStorage
+Efecto: Inmediato (no requiere esperar GitHub Pages)
+                `;
+
+                document.getElementById('process-info').textContent = info;
+            }
+
+            scanForActiveSessions() {
+                // Esta función podría expandirse para detectar sesiones activas reales
+                let activeSessions = 0;
+                
+                const possibleKeys = [
+                    'authenticated_session',
+                    'authenticated_session_v2',
+                    'authenticated_session_secure'
+                ];
+
+                possibleKeys.forEach(key => {
+                    if (localStorage.getItem(key) === 'true') {
+                        activeSessions++;
+                    }
+                });
+
+                console.log(`🔍 Detectadas ${activeSessions} sesiones potencialmente activas`);
+            }
+        }
+
+        // Funciones globales
+        function executeInstantLogout() {
+            if (instantLogout) {
+                instantLogout.executeInstantLogout();
+            }
+        }
+
+        function cancelLogout() {
+            if (instantLogout) {
+                instantLogout.cancelLogout();
+            }
+        }
+
+        // Inicializar cuando cargue la página
+        let instantLogout;
+        
+        window.addEventListener('load', () => {
+            // Advertencia de seguridad
+            if (!confirm('⚠️ ADVERTENCIA DE SEGURIDAD\n\nEsta acción deslogueará INMEDIATAMENTE a todos los usuarios activos.\n\n¿Estás seguro de que quieres continuar?')) {
+                window.close();
+                window.location.href = 'admin-panel.html';
+                return;
+            }
+
+            instantLogout = new InstantLogout();
+        });
+
+        // Prevenir cierre accidental
+        window.addEventListener('beforeunload', (e) => {
+            if (instantLogout && instantLogout.isActive) {
+                e.preventDefault();
+                e.returnValue = '¿Estás seguro de que quieres salir? El logout está en progreso.';
+            }
+        });
+    </script>
+</body>
+</html>

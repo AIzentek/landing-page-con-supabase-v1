@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  lapzo-agent:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/app
+    environment:
+      - AGENT_ID=agent_6501k7apm2zte7p8c3zzsmjddzsh
+      - USERNAME=lapzodemo
+      - PASSWORD=Lapzodemo!
+    restart: unless-stopped
+    container_name: lapzo-voice-agent
+
+networks:
+  default:
+    name: lapzo-network

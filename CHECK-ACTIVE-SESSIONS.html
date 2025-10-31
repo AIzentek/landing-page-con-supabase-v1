@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔍 VERIFICAR CONEXIONES ACTIVAS</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .status-card { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .online { border-left: 5px solid #28a745; }
+        .offline { border-left: 5px solid #dc3545; }
+        .warning { border-left: 5px solid #ffc107; }
+        .refresh-btn { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 16px;
+            margin: 5px;
+        }
+        .urgent-btn { 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 18px;
+            margin: 10px;
+        }
+        .info { background: #e3f2fd; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .timestamp { color: #666; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 VERIFICAR CONEXIONES ACTIVAS - LAPZO</h1>
+        
+        <div class="info">
+            <strong>📍 URL Monitoreada:</strong> https://aizentek.github.io/demo-voice-LAPZO/<br>
+            <strong>🔐 Credenciales actuales:</strong> aizentekdemo / Demo12345!
+        </div>
+        
+        <button class="refresh-btn" onclick="checkConnections()">🔄 Verificar Ahora</button>
+        <button class="urgent-btn" onclick="showUnpublishInstructions()">🚨 EXPULSAR TODOS (Unpublish)</button>
+        
+        <div id="connection-status">
+            <div class="status-card warning">
+                <h3>⏳ Verificando conexiones...</h3>
+                <p>Analizando estado de sesiones activas...</p>
+            </div>
+        </div>
+        
+        <div id="session-details"></div>
+        
+        <div id="unpublish-instructions" style="display:none;">
+            <div class="status-card" style="background: #fff3cd; border-left: 5px solid #ffc107;">
+                <h3>🚨 INSTRUCCIONES PARA EXPULSIÓN TOTAL</h3>
+                <p><strong>Para expulsar INMEDIATAMENTE a todos los usuarios conectados:</strong></p>
+                <ol>
+                    <li><strong>Ve a:</strong> <a href="https://github.com/AIzentek/demo-voice-LAPZO/settings/pages" target="_blank">GitHub Pages Settings</a></li>
+                    <li><strong>Busca:</strong> Los 3 puntos (⋯) junto a "Visit site"</li>
+                    <li><strong>Clic:</strong> "Unpublish site"</li>
+                    <li><strong>Confirma:</strong> La acción</li>
+                    <li><strong>Resultado:</strong> ¡Todos expulsados en 1-2 minutos!</li>
+                </ol>
+                <p><strong>🔄 Para reactivar:</strong> Vuelve a la misma página y configura "Deploy from a branch" → main</p>
+            </div>
+        </div>
+
+        <div class="status-card">
+            <h3>📊 Información Técnica</h3>
+            <div id="technical-info">
+                <p><strong>Timestamp de verificación:</strong> <span id="check-time"></span></p>
+                <p><strong>SESSION_KEY monitoreado:</strong> aizentekdemo_session_demo2025</p>
+                <p><strong>Método:</strong> Verificación de localStorage y flags</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SESSION_KEY = 'aizentekdemo_session_demo2025';
+        let checkInterval;
+        
+        function updateTimestamp() {
+            document.getElementById('check-time').textContent = new Date().toLocaleString();
+        }
+        
+        function checkConnections() {
+            updateTimestamp();
+            
+            // Verificar estado local
+            const hasLocalSession = localStorage.getItem(SESSION_KEY);
+            const nuclearActive = localStorage.getItem('nuclear_logout_active');
+            const nuclearTimestamp = localStorage.getItem('nuclear_logout_timestamp');
+            
+            let statusHtml = '';
+            let connectionCount = 0;
+            
+            // Análisis de sesión local
+            if (hasLocalSession) {
+                connectionCount++;
+                statusHtml += `
+                    <div class="status-card online">
+                        <h3>✅ SESIÓN LOCAL ACTIVA</h3>
+                        <p>Este navegador tiene una sesión activa</p>
+                        <p class="timestamp">Session: ${hasLocalSession}</p>
+                    </div>
+                `;
+            } else {
+                statusHtml += `
+                    <div class="status-card offline">
+                        <h3>❌ Sin sesión local</h3>
+                        <p>Este navegador no tiene sesión activa</p>
+                    </div>
+                `;
+            }
+            
+            // Verificar flags de nuclear
+            if (nuclearActive === 'true') {
+                const nuclearTime = nuclearTimestamp ? new Date(parseInt(nuclearTimestamp)) : null;
+                statusHtml += `
+                    <div class="status-card warning">
+                        <h3>💥 NUCLEAR LOGOUT ACTIVO</h3>
+                        <p>Se ejecutó un nuclear logout reciente</p>
+                        <p class="timestamp">Timestamp: ${nuclearTime ? nuclearTime.toLocaleString() : 'Desconocido'}</p>
+                    </div>
+                `;
+            }
+            
+            // Resumen
+            statusHtml = `
+                <div class="status-card ${connectionCount > 0 ? 'online' : 'offline'}">
+                    <h3>📊 ESTADO GENERAL</h3>
+                    <p><strong>Conexiones detectadas:</strong> ${connectionCount}</p>
+                    <p><strong>Estado:</strong> ${connectionCount > 0 ? '🟢 HAY USUARIOS CONECTADOS' : '🔴 NO HAY USUARIOS DETECTADOS'}</p>
+                    <p class="timestamp">Última verificación: ${new Date().toLocaleString()}</p>
+                </div>
+            ` + statusHtml;
+            
+            // Información adicional sobre limitaciones
+            statusHtml += `
+                <div class="status-card warning">
+                    <h3>⚠️ LIMITACIONES DE VERIFICACIÓN</h3>
+                    <p><strong>Importante:</strong> Esta verificación solo puede detectar:</p>
+                    <ul>
+                        <li>✅ Sesión activa en ESTE navegador/dispositivo</li>
+                        <li>✅ Flags de nuclear logout</li>
+                        <li>❌ NO puede detectar usuarios en otros dispositivos/laptops</li>
+                        <li>❌ NO puede acceder a localStorage de otros navegadores</li>
+                    </ul>
+                    <p><strong>📱 Para verificación completa:</strong> Necesitarías acceso a cada dispositivo individualmente o usar un sistema de logging centralizado.</p>
+                </div>
+            `;
+            
+            document.getElementById('connection-status').innerHTML = statusHtml;
+            
+            // Detalles técnicos
+            const technicalDetails = `
+                <div class="status-card">
+                    <h3>🔧 Detalles Técnicos</h3>
+                    <p><strong>localStorage keys encontrados:</strong> ${Object.keys(localStorage).length}</p>
+                    <p><strong>SESSION_KEY:</strong> ${hasLocalSession || 'No encontrado'}</p>
+                    <p><strong>Nuclear flags:</strong> ${nuclearActive || 'No activo'}</p>
+                    <p><strong>Timestamp nuclear:</strong> ${nuclearTimestamp || 'No disponible'}</p>
+                </div>
+            `;
+            
+            document.getElementById('session-details').innerHTML = technicalDetails;
+        }
+        
+        function showUnpublishInstructions() {
+            const instructionsDiv = document.getElementById('unpublish-instructions');
+            instructionsDiv.style.display = instructionsDiv.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Auto-refresh cada 5 segundos
+        function startAutoRefresh() {
+            if (checkInterval) clearInterval(checkInterval);
+            checkInterval = setInterval(checkConnections, 5000);
+        }
+        
+        // Verificación inicial
+        checkConnections();
+        startAutoRefresh();
+        
+        // Actualizar timestamp cada segundo
+        setInterval(updateTimestamp, 1000);
+    </script>
+</body>
+</html>

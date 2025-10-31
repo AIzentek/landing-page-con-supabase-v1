@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TEST NUCLEAR LOGOUT</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .online { background: #d4edda; border: 1px solid #c3e6cb; }
+        .offline { background: #f8d7da; border: 1px solid #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>🚨 TEST NUCLEAR LOGOUT - LAPZO</h1>
+    
+    <div id="status" class="status">Checking...</div>
+    
+    <h2>Acciones de Test:</h2>
+    <button onclick="testLogin()">🔑 Test Login</button>
+    <button onclick="simulateNuclear()">💥 Simular Nuclear Logout</button>
+    <button onclick="checkFlags()">📊 Ver FLAGS</button>
+    <button onclick="clearAll()">🧹 Limpiar Todo</button>
+    
+    <h2>Estado de Sesión:</h2>
+    <div id="session-info"></div>
+    
+    <h2>FLAGS de Nuclear:</h2>
+    <div id="nuclear-flags"></div>
+    
+    <h2>Log de Eventos:</h2>
+    <div id="event-log" style="background:#f0f0f0; padding:10px; height:200px; overflow-y:scroll;"></div>
+
+    <script>
+        const SESSION_KEY = 'aizentekdemo_session_demo2025';
+        let logData = [];
+        
+        function addLog(message) {
+            const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+            logData.push(`[${timestamp}] ${message}`);
+            document.getElementById('event-log').innerHTML = logData.slice(-20).join('<br>');
+            console.log(message);
+        }
+        
+        function testLogin() {
+            localStorage.setItem(SESSION_KEY, 'true');
+            localStorage.setItem(SESSION_KEY + '_timestamp', Date.now());
+            addLog('✅ Sesión creada artificialmente');
+            updateStatus();
+        }
+        
+        function simulateNuclear() {
+            addLog('💥 SIMULANDO NUCLEAR LOGOUT...');
+            
+            // Simular lo que hace el dashboard
+            const nuclearTimestamp = Date.now().toString();
+            localStorage.setItem('nuclear_logout_timestamp', nuclearTimestamp);
+            localStorage.setItem('nuclear_logout_active', 'true');
+            localStorage.removeItem(SESSION_KEY);
+            localStorage.setItem('force_logout_all', nuclearTimestamp);
+            
+            addLog('🚨 FLAGS NUCLEAR establecidos');
+            addLog('🗝️ SESSION_KEY eliminado');
+            
+            updateStatus();
+        }
+        
+        function checkFlags() {
+            const flags = {
+                session: localStorage.getItem(SESSION_KEY),
+                nuclear_active: localStorage.getItem('nuclear_logout_active'),
+                nuclear_timestamp: localStorage.getItem('nuclear_logout_timestamp'),
+                force_logout: localStorage.getItem('force_logout_all')
+            };
+            
+            addLog('📊 FLAGS: ' + JSON.stringify(flags, null, 2));
+            updateStatus();
+        }
+        
+        function clearAll() {
+            localStorage.clear();
+            sessionStorage.clear();
+            addLog('🧹 TODO LIMPIADO');
+            updateStatus();
+        }
+        
+        function updateStatus() {
+            const hasSession = localStorage.getItem(SESSION_KEY);
+            const nuclearActive = localStorage.getItem('nuclear_logout_active') === 'true';
+            const statusDiv = document.getElementById('status');
+            const sessionDiv = document.getElementById('session-info');
+            const nuclearDiv = document.getElementById('nuclear-flags');
+            
+            if (hasSession) {
+                statusDiv.className = 'status online';
+                statusDiv.innerHTML = '✅ SESIÓN ACTIVA - Usuario logueado';
+            } else {
+                statusDiv.className = 'status offline';
+                statusDiv.innerHTML = '❌ SIN SESIÓN - Usuario NO logueado';
+            }
+            
+            sessionDiv.innerHTML = `
+                Session Key: ${hasSession || 'NULL'}<br>
+                Timestamp: ${localStorage.getItem(SESSION_KEY + '_timestamp') || 'NULL'}
+            `;
+            
+            nuclearDiv.innerHTML = `
+                Nuclear Active: ${localStorage.getItem('nuclear_logout_active') || 'NULL'}<br>
+                Nuclear Timestamp: ${localStorage.getItem('nuclear_logout_timestamp') || 'NULL'}<br>
+                Force Logout: ${localStorage.getItem('force_logout_all') || 'NULL'}
+            `;
+        }
+        
+        // Storage event listener (para sync entre pestañas)
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'force_logout_all' || event.key === 'nuclear_logout_active') {
+                addLog('🔥 STORAGE EVENT DETECTADO: ' + event.key);
+                addLog('⚡ Esto debería causar logout inmediato en ventana principal');
+            }
+        });
+        
+        // Update status every second
+        setInterval(updateStatus, 1000);
+        updateStatus();
+        addLog('🚀 Test de Nuclear Logout iniciado');
+    </script>
+</body>
+</html>
