@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Supabase Connection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status {
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover { background: #5568d3; }
+        pre {
+            background: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test de Conexión Supabase</h1>
+    
+    <div id="status"></div>
+    
+    <button onclick="testConnection()">1. Probar Conexión</button>
+    <button onclick="testInsert()">2. Insertar Sesión de Prueba</button>
+    <button onclick="checkRecords()">3. Ver Registros</button>
+    
+    <div id="results"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ua-parser-js@1/dist/ua-parser.min.js"></script>
+    <script src="./supabase-config.js"></script>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        async function testConnection() {
+            showStatus('🔄 Probando conexión...', 'info');
+            
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                if (!client) {
+                    showStatus('❌ Error: No se pudo inicializar el cliente de Supabase', 'error');
+                    return;
+                }
+
+                // Intentar hacer una consulta simple
+                const { data, error } = await client
+                    .from('session_logs')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    showStatus(`❌ Error de conexión: ${error.message}`, 'error');
+                    showResults(error);
+                } else {
+                    showStatus('✅ Conexión exitosa con Supabase!', 'success');
+                    showResults({ status: 'connected', data });
+                }
+            } catch (err) {
+                showStatus(`❌ Error: ${err.message}`, 'error');
+                showResults(err);
+            }
+        }
+
+        async function testInsert() {
+            showStatus('🔄 Insertando sesión de prueba...', 'info');
+            
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                const testSession = {
+                    login_time: new Date().toISOString(),
+                    login_successful: true,
+                    is_active: true,
+                    username: 'test_user',
+                    country: 'Mexico',
+                    city: 'Test City',
+                    device_type: 'desktop',
+                    browser: 'Chrome',
+                    os: 'Windows',
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    user_agent: navigator.userAgent,
+                    metadata: {
+                        test: true,
+                        timestamp: Date.now()
+                    }
+                };
+
+                const { data, error } = await client
+                    .from('session_logs')
+                    .insert([testSession])
+                    .select();
+
+                if (error) {
+                    showStatus(`❌ Error al insertar: ${error.message}`, 'error');
+                    showResults(error);
+                } else {
+                    showStatus('✅ Sesión de prueba insertada correctamente!', 'success');
+                    showResults(data);
+                }
+            } catch (err) {
+                showStatus(`❌ Error: ${err.message}`, 'error');
+                showResults(err);
+            }
+        }
+
+        async function checkRecords() {
+            showStatus('🔄 Consultando registros...', 'info');
+            
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                const { data, error } = await client
+                    .from('session_logs')
+                    .select('*')
+                    .order('login_time', { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    showStatus(`❌ Error al consultar: ${error.message}`, 'error');
+                    showResults(error);
+                } else {
+                    showStatus(`✅ Encontrados ${data.length} registros`, 'success');
+                    showResults(data);
+                }
+            } catch (err) {
+                showStatus(`❌ Error: ${err.message}`, 'error');
+                showResults(err);
+            }
+        }
+
+        // Auto-test al cargar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showStatus('⚡ Página cargada. Haz click en "1. Probar Conexión" para empezar', 'info');
+            }, 500);
+        });
+    </script>
+</body>
+</html>
