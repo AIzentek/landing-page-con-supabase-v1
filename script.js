@@ -111,7 +111,7 @@ function checkAuthentication() {
 }
 
 // Función para manejar el login
-function handleLogin(event) {
+async function handleLogin(event) {
     event.preventDefault();
     
     const username = document.getElementById('username').value;
@@ -125,9 +125,12 @@ function handleLogin(event) {
         localStorage.setItem(SESSION_KEY + '_timestamp', new Date().getTime());
         errorMessage.style.display = 'none';
         
-        // Login exitoso - monitoring ya está activo automáticamente
+        // 🔥 NUEVO: Registrar login exitoso en Supabase
+        if (window.sessionTracker) {
+            await window.sessionTracker.trackLogin(username, true, 0);
+        }
         
-        // Registrar acceso exitoso para el panel de administración
+        // Registrar acceso exitoso para el panel de administración (local)
         logUserAccess('success', { username, timestamp: new Date().toISOString() });
         
         // Mostrar animación de éxito y cambiar a contenido principal
@@ -140,7 +143,16 @@ function handleLogin(event) {
         // Credenciales incorrectas
         errorMessage.style.display = 'block';
         
-        // Registrar intento fallido
+        // Contar intentos fallidos para Supabase
+        const failedAttempts = parseInt(localStorage.getItem('failed_login_attempts') || '0') + 1;
+        localStorage.setItem('failed_login_attempts', failedAttempts.toString());
+        
+        // 🔥 NUEVO: Registrar intento fallido en Supabase
+        if (window.sessionTracker) {
+            await window.sessionTracker.trackFailedAttempt(username || 'empty', failedAttempts);
+        }
+        
+        // Registrar intento fallido (local)
         logUserAccess('failed', { 
             username: username || 'empty', 
             timestamp: new Date().toISOString(),
@@ -185,10 +197,16 @@ function showSuccessAnimation() {
 }
 
 // Función para cerrar sesión
-function logout() {
+async function logout() {
     // Mostrar confirmación
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        // 🔥 NUEVO: Registrar logout en Supabase
+        if (window.sessionTracker) {
+            await window.sessionTracker.trackLogout();
+        }
+        
         localStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem('failed_login_attempts'); // Limpiar contador de intentos fallidos
         
         // Limpiar formulario
         document.getElementById('username').value = '';
