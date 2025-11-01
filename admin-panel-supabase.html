@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Supabase Edition</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 2.5rem;
+        }
+        .header .subtitle {
+            color: #666;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        .admin-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+        }
+        .admin-section h2 {
+            margin-top: 0;
+            color: #667eea;
+            font-size: 1.8rem;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-danger {
+            background: #e74c3c;
+            font-size: 18px;
+            padding: 20px 40px;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.5);
+        }
+        .btn-success {
+            background: #27ae60;
+        }
+        .btn-success:hover {
+            background: #2ecc71;
+        }
+        .btn-warning {
+            background: #f39c12;
+        }
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 16px;
+            display: none;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .sessions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .sessions-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .sessions-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .sessions-table tr:hover {
+            background: #f8f9fa;
+        }
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .nuclear-section {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(238, 90, 111, 0.3);
+        }
+        .nuclear-section h2 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+        .countdown {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ Panel de Administración</h1>
+            <p class="subtitle">Control Total con Supabase Integration</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Estadísticas -->
+        <div class="admin-section">
+            <h2>📊 Estadísticas en Tiempo Real</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Sesiones Activas</div>
+                    <span class="stat-number" id="active-count">-</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Logins Hoy</div>
+                    <span class="stat-number" id="today-count">-</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Sesiones</div>
+                    <span class="stat-number" id="total-count">-</span>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Intentos Fallidos</div>
+                    <span class="stat-number" id="failed-count">-</span>
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="loadStats()">🔄 Actualizar Estadísticas</button>
+        </div>
+
+        <!-- NUCLEAR LOGOUT -->
+        <div class="nuclear-section">
+            <h2>💥 NUCLEAR LOGOUT</h2>
+            <p style="font-size: 1.2rem; margin: 20px 0;">
+                ⚠️ <strong>OPCIÓN MÁS PODEROSA</strong> ⚠️<br>
+                Expulsa TODAS las sesiones activas inmediatamente
+            </p>
+            <button class="btn btn-danger" onclick="nuclearLogout()" style="font-size: 20px; padding: 25px 50px;">
+                💥 EJECUTAR NUCLEAR LOGOUT
+            </button>
+            <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.9;">
+                • Cierra todas las sesiones en Supabase<br>
+                • Limpia localStorage/sessionStorage<br>
+                • Fuerza logout en todas las ventanas abiertas<br>
+                • Recarga automática después de 3 segundos
+            </p>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="admin-section">
+            <h2>⚡ Acciones Rápidas</h2>
+            <div class="quick-actions">
+                <button class="btn" onclick="viewActiveSessions()">👥 Ver Sesiones Activas</button>
+                <button class="btn" onclick="closeAllSessions()">🔒 Cerrar Todas las Sesiones</button>
+                <button class="btn btn-warning" onclick="openDashboard()">📊 Abrir Dashboard</button>
+                <button class="btn" onclick="exportData()">📥 Exportar Datos</button>
+            </div>
+        </div>
+
+        <!-- Sesiones Activas -->
+        <div class="admin-section">
+            <h2>🔴 Sesiones Activas Ahora</h2>
+            <div id="sessions-container">
+                <div class="loading">Cargando sesiones...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ua-parser-js@1/dist/ua-parser.min.js"></script>
+    <script src="./supabase-config.js"></script>
+
+    <script>
+        // Estado global
+        let activeSessions = [];
+        let stats = {};
+
+        // Funciones de alerta
+        function showAlert(type, message) {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = message;
+            alert.style.display = 'block';
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Cargar estadísticas
+        async function loadStats() {
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                // Total de sesiones
+                const { count: totalCount } = await client
+                    .from('session_logs')
+                    .select('*', { count: 'exact', head: true });
+                
+                // Sesiones activas
+                const { count: activeCount } = await client
+                    .from('session_logs')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('is_active', true);
+                
+                // Logins hoy
+                const today = new Date().toISOString().split('T')[0];
+                const { count: todayCount } = await client
+                    .from('session_logs')
+                    .select('*', { count: 'exact', head: true })
+                    .gte('login_time', today)
+                    .eq('login_successful', true);
+                
+                // Intentos fallidos
+                const { count: failedCount } = await client
+                    .from('session_logs')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('login_successful', false);
+                
+                // Actualizar UI
+                document.getElementById('active-count').textContent = activeCount || 0;
+                document.getElementById('today-count').textContent = todayCount || 0;
+                document.getElementById('total-count').textContent = totalCount || 0;
+                document.getElementById('failed-count').textContent = failedCount || 0;
+                
+                showAlert('success', '✅ Estadísticas actualizadas');
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+                showAlert('danger', '❌ Error cargando estadísticas: ' + error.message);
+            }
+        }
+
+        // Ver sesiones activas
+        async function viewActiveSessions() {
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                const { data, error } = await client
+                    .from('session_logs')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('login_time', { ascending: false });
+                
+                if (error) throw error;
+                
+                activeSessions = data;
+                displaySessions(data);
+                showAlert('success', `✅ ${data.length} sesiones activas encontradas`);
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', '❌ Error: ' + error.message);
+            }
+        }
+
+        // Mostrar sesiones en tabla
+        function displaySessions(sessions) {
+            const container = document.getElementById('sessions-container');
+            
+            if (sessions.length === 0) {
+                container.innerHTML = '<p style="text-align:center;padding:20px;">No hay sesiones activas</p>';
+                return;
+            }
+            
+            let html = '<table class="sessions-table">';
+            html += '<thead><tr>';
+            html += '<th>Usuario</th>';
+            html += '<th>Ubicación</th>';
+            html += '<th>Dispositivo</th>';
+            html += '<th>Login</th>';
+            html += '<th>Duración</th>';
+            html += '<th>Estado</th>';
+            html += '<th>Acciones</th>';
+            html += '</tr></thead><tbody>';
+            
+            sessions.forEach(session => {
+                const duration = calculateDuration(session.login_time);
+                const location = `${session.city || 'Unknown'}, ${session.country || 'Unknown'}`;
+                const device = `${session.device_type || 'Unknown'} - ${session.browser || 'Unknown'}`;
+                
+                html += '<tr>';
+                html += `<td><strong>${session.username || 'N/A'}</strong></td>`;
+                html += `<td>${location}</td>`;
+                html += `<td>${device}</td>`;
+                html += `<td>${formatDate(session.login_time)}</td>`;
+                html += `<td>${duration}</td>`;
+                html += `<td><span class="status-active">🟢 Activo</span></td>`;
+                html += `<td><button class="btn" onclick="closeSession('${session.id}')">❌ Cerrar</button></td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Cerrar una sesión específica
+        async function closeSession(sessionId) {
+            if (!confirm('¿Cerrar esta sesión?')) return;
+            
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                const { error } = await client
+                    .from('session_logs')
+                    .update({
+                        is_active: false,
+                        logout_time: new Date().toISOString()
+                    })
+                    .eq('id', sessionId);
+                
+                if (error) throw error;
+                
+                showAlert('success', '✅ Sesión cerrada correctamente');
+                viewActiveSessions(); // Recargar lista
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', '❌ Error cerrando sesión: ' + error.message);
+            }
+        }
+
+        // Cerrar todas las sesiones
+        async function closeAllSessions() {
+            if (!confirm('⚠️ ¿Cerrar TODAS las sesiones activas en Supabase?\n\nEsto actualizará el estado pero NO forzará logout inmediato.')) {
+                return;
+            }
+            
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                const { error } = await client
+                    .from('session_logs')
+                    .update({
+                        is_active: false,
+                        logout_time: new Date().toISOString()
+                    })
+                    .eq('is_active', true);
+                
+                if (error) throw error;
+                
+                showAlert('success', '✅ Todas las sesiones marcadas como cerradas en Supabase');
+                loadStats();
+                viewActiveSessions();
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', '❌ Error: ' + error.message);
+            }
+        }
+
+        // 💥 NUCLEAR LOGOUT
+        async function nuclearLogout() {
+            if (!confirm('💥 NUCLEAR LOGOUT\n\n¡OPCIÓN MÁS PODEROSA!\n\nEsto hará:\n✓ Cerrará TODAS las sesiones en Supabase\n✓ Limpiará localStorage/sessionStorage\n✓ Enviará señal de logout a todas las ventanas\n✓ Forzará recarga automática\n\n¿CONTINUAR?')) {
+                return;
+            }
+            
+            showAlert('danger', '💥 EJECUTANDO NUCLEAR LOGOUT...');
+            
+            try {
+                // 1. Cerrar todas las sesiones en Supabase
+                const client = window.SupabaseConfig.getClient();
+                await client
+                    .from('session_logs')
+                    .update({
+                        is_active: false,
+                        logout_time: new Date().toISOString()
+                    })
+                    .eq('is_active', true);
+                
+                // 2. Limpiar localStorage y sessionStorage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // 3. Enviar señal de logout nuclear a todas las ventanas
+                window.postMessage({type: 'NUCLEAR_LOGOUT', timestamp: Date.now()}, '*');
+                
+                // 4. Broadcast storage event
+                localStorage.setItem('nuclear_logout_active', 'true');
+                localStorage.setItem('nuclear_logout_timestamp', Date.now().toString());
+                
+                // 5. Mostrar countdown
+                let countdown = 3;
+                const countdownEl = document.createElement('div');
+                countdownEl.className = 'countdown';
+                countdownEl.textContent = countdown;
+                document.body.appendChild(countdownEl);
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    countdownEl.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(interval);
+                        location.reload();
+                    }
+                }, 1000);
+                
+                showAlert('success', '💥 NUCLEAR LOGOUT COMPLETADO<br>Recargando en 3 segundos...');
+                
+            } catch (error) {
+                console.error('Error en nuclear logout:', error);
+                showAlert('danger', '❌ Error: ' + error.message);
+            }
+        }
+
+        // Abrir dashboard
+        function openDashboard() {
+            window.open('./supabase-dashboard.html', '_blank');
+        }
+
+        // Exportar datos
+        async function exportData() {
+            try {
+                const client = window.SupabaseConfig.getClient();
+                
+                const { data, error } = await client
+                    .from('session_logs')
+                    .select('*')
+                    .order('login_time', { ascending: false })
+                    .limit(1000);
+                
+                if (error) throw error;
+                
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `sessions_export_${new Date().toISOString()}.json`;
+                a.click();
+                
+                showAlert('success', '✅ Datos exportados correctamente');
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', '❌ Error exportando: ' + error.message);
+            }
+        }
+
+        // Utilidades
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString('es-ES');
+        }
+
+        function calculateDuration(startTime) {
+            const start = new Date(startTime);
+            const now = new Date();
+            const diff = Math.floor((now - start) / 1000);
+            
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+            
+            if (hours > 0) return `${hours}h ${minutes}m`;
+            if (minutes > 0) return `${minutes}m ${seconds}s`;
+            return `${seconds}s`;
+        }
+
+        // Auto-cargar al iniciar
+        window.addEventListener('load', () => {
+            loadStats();
+            viewActiveSessions();
+            
+            // Auto-refresh cada 30 segundos
+            setInterval(() => {
+                loadStats();
+                viewActiveSessions();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
